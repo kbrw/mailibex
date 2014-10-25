@@ -16,7 +16,7 @@ defmodule DKIM do
               {:ok,{sig.s,sig.d}}
             else {:error,:sig_not_match} end
           else {:error,:sig_algo_not_match} end
-        _ -> {:error,"DKIM key unavailable for #{sig.s}._domainkey.#{sig.d}"} end
+        _ -> {:error,{:unavailable_pubkey,"#{sig.s}._domainkey.#{sig.d}"}} end
     else {:error,:body_hash_no_match} end
   end
 

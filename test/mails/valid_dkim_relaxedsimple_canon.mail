@@ -1,0 +1,43 @@
+DKIM-Signature: t=1414236033;
+	 x=1422662400;
+	 s=cobrason;
+	 h=to:from:date:subject:message-id:mime-version;
+	 d=order.brendy.fr;
+	 c=relaxed/simple;
+	 bh=sjTVMzFCuXL3Ekii8IeytmNVNNtAwYHiCm2GI9ltHCI=;
+	 a=rsa-sha256;
+	 v=1;
+	 b=PCZVAkfr0k1Hi1YRyUTo0ntJOHBHYmNJl6A4z0HTFSTXDuPb9KM+JUlHdFAthK/f6Cd7qx1dvLzMndgQcByHjYjdK5LiGiukpYO8w3cHjUQtah/zR8Yj2L67K2zuNNt0rLgYGty2nfsnCJvYoAbCZCMQYl6g8bETvigH1LTmvy/97XPShkOqU7/yRNUhtuqfBduTcboUUdpC2lKuMnlwVkqB6hAk8HYQUcgTKH8adEwJJO1RDs6ITgxcYqyWoCW4aOdHsh6A/yMXJaT4K+pOwAllhES+6/F9OuZ+XVPmKd21NHf58NCdRIXJmuGgK+mNkSlf2WLbgJiuqBhPfi4cgg==
+Received: by mail-ig0-f179.google.com with SMTP id r10so303438igi.6       for <arnaud@orderh.brendy.fr>;
+	 Sat, 25 Oct 2014 04:20:31 -0700 (PDT)
+MIME-Version: 1.0
+X-Received: by 10.42.216.16 with SMTP id hg16mr60053icb.86.1414236031748;
+	 Sat,25 Oct 2014 04:20:31 -0700 (PDT)
+Received: by 10.107.10.204 with HTTP;
+	 Sat, 25 Oct 2014 04:20:31 -0700 (PDT)
+Date: Sat, 25 Oct 2014 13:20:31 +0200
+Message-ID: <CAHHTVj5hzhkQz4MW=18uKVWrNcrTYLQDevxqKW1Fu=LXDCi_oA@mail.gmail.com>
+Subject: Message de test
+From: cobrason@order.brendy.fr
+To: arnaud.wetzel@kbrwadventure.com
+Content-Type: multipart/alternative;
+	 boundary=20cf301cbdfa4d1fed05063d7c09
+
+
+--20cf301cbdfa4d1fed05063d7c09
+Content-Type: text/plain;
+	 charset=UTF-8
+Content-Disposition: inline
+
+Shopping Adventure 
+J'envoie un message de test.
+
+--20cf301cbdfa4d1fed05063d7c09
+Content-Type: text/html;
+	 charset=UTF-8
+Content-Disposition: inline
+
+<h1>Shopping Adventure</h1> 
+<div dir="ltr">J&#39;envoie un message de test.</div>
+
+--20cf301cbdfa4d1fed05063d7c09--
