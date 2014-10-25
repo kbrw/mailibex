@@ -1,61 +1,67 @@
 defmodule DKIM do
-  def check(mail) do
-    {headers,body}=split_body(mail)
-    headers = parse_headers(headers)
-    sig = parse_params(headers["dkim-signature"].value)
-    {cano_h,cano_body,sig_alg,hash_alg} = select_algos(sig.a,sig.c)
-    if (sig.bh == body_hash(body,cano_body,hash_alg,sig[:l])) do
+  def check(%Mailibex{}=mail) do
+    %{headers: headers, raw: body} = Mailibex.with(mail,DKIM)
+    sig = headers[:'dkim-signature'].v
+    if (sig.bh == body_hash(body,sig)) do
       case :inet_res.lookup('#{sig.s}._domainkey.#{sig.d}', :in, :txt) do
         [rec|_] -> 
-          pubkey = parse_params(IO.chardata_to_string(rec))
-          if :"#{pubkey.k}" == sig_alg do
-            header_h = headers_hash(headers,sig.h,cano_h)
-            target_sig = Base.decode64!(String.replace(sig.b,~r/\s/,""))
-            key = extract_key(Base.decode64!(pubkey.p))
-            if :crypto.verify(:rsa,:sha256,header_h,target_sig,key) do
-              {:ok,{sig.s,sig.d}}
-            else {:error,:sig_not_match} end
+          pubkey = Mailibex.parse_params(IO.chardata_to_string(rec))
+          if :"#{pubkey[:k]||"rsa"}" == sig.a.sig do
+            case extract_key64(pubkey[:p]||"") do
+              {:ok,key}->
+                header_h = headers_hash(headers,sig)
+                if :crypto.verify(:rsa,:sha256,header_h,sig.b,key) do
+                  {:ok,{sig.s,sig.d}}
+                else {:error,:sig_not_match} end
+              :error-> {:error,:invalid_pub_key} end
           else {:error,:sig_algo_not_match} end
         _ -> {:error,{:unavailable_pubkey,"#{sig.s}._domainkey.#{sig.d}"}} end
     else {:error,:body_hash_no_match} end
   end
-
-  def split_body(data), do: 
-    (data |> String.split("\r\n\r\n",parts: 2) |> List.to_tuple)
-  
-  def parse_params(param) do
-    param
-    |> String.split(~r"\s*;\s*",trim: true)
-    |> Enum.map(fn e-> [k,v]=String.split(e,"=",parts: 2);{:"#{k}",v} end)
-    |> Enum.into(%{})
-  end
-  def parse_headers(headers) when is_binary(headers) do
-    headers
-    |> String.replace(~r/\r\n([^\t ])/,"\r\n!\\1")
-    |> String.split("\r\n!")
-    |> Enum.map(fn e->
-         [k,v]=String.split(canon_header(e,:relaxed),":", parts: 2)
-         {k,%{raw: e,value: v}}
-       end)
-    |> Enum.into(%{})
+  def sign(%Mailibex{headers: headers}=mail,sig_params \\ []) do
+    mail=%{mail|headers: Dict.delete(headers,:'dkim-signature')}
   end
 
-  def unfold(value), do: 
-    String.replace(value,~r/\r\n([\t ])/,"\\1")
-
-  def select_algos(sig_a,sig_c) do
-    {cano_h,cano_body}=case String.split(sig_c,"/") do
-      [t] -> {:"#{t}",:simple}
-      [t1,t2] -> {:"#{t1}",:"#{t2}"}
+  def parse(%Mailibex{headers: headers}=mail,_rec) do
+    case headers[:'dkim-signature'] do
+      %{raw: raw, v: nil}-> 
+        sig = Mailibex.parse_params(raw)
+        |> Dict.update(:c,%{header: :simple,body: :simple},fn sig_c->
+             case String.split(sig_c,"/") do
+               [t] -> %{header: :"#{t}",body: :simple}
+               [t1,t2] -> %{header: :"#{t1}",body: :"#{t2}"}
+               _ -> %{header: :simple,body: :simple}
+             end
+           end)
+        |> Dict.update(:b,"", fn sig_b->
+             case Base.decode64(String.replace(sig_b,~r/\s/,"")) do
+               {:ok,b}->b
+               :error-> ""
+             end
+           end)
+        |> Dict.update(:a,%{sig: :rsa, hash: :sha256}, fn sig_a->
+            case String.split(sig_a,"-") do
+              [sig,hash]->%{sig: :"#{sig}",hash: :"#{hash}"}
+              _ ->%{sig: :rsa, hash: :sha256}
+            end
+           end)
+        |> Dict.update(:l,nil, fn sig_l->
+             case Integer.parse(sig_l) do
+               :error->nil
+               {l,_}->l
+             end
+           end)
+        |> Dict.update(:bh,"", &String.replace(&1,~r/\s/,""))
+        |> Dict.update(:h,[],fn e->e|>String.downcase|>String.split(":")|>Enum.map(&String.to_atom/1) end)
+        put_in(mail,[:headers,:'dkim-signature',:v],sig)
+      _ -> mail
     end
-    [sig_alg,hash_alg]=for e<-String.split(sig_a,"-"), do: :"#{e}"
-    {cano_h,cano_body,sig_alg,hash_alg}
   end
 
   def canon_header(header,:simple), do: header
   def canon_header(header,:relaxed) do
     [k,v] = String.split(header,~r/\s*:\s*/, parts: 2)
-    "#{String.downcase(k)}:#{v |> unfold |> String.replace(~r"[\t ]+"," ") |> String.rstrip}"
+    "#{String.downcase(k)}:#{v |> Mailibex.unfold |> String.replace(~r"[\t ]+"," ") |> String.rstrip}"
   end
 
   def canon_body(body,:simple), do:
@@ -68,8 +74,6 @@ defmodule DKIM do
   end
 
   def truncate_body(body,nil), do: body
-  def truncate_body(body,l) when is_binary(l), do:
-    truncate_body(body,elem(Integer.parse(l),0))
   def truncate_body(body,l) when is_integer(l) do
     <<trunc_body::binary-size(l),_::binary>> = body
     trunc_body
@@ -78,25 +82,29 @@ defmodule DKIM do
   def hash(bin,:sha256), do: :crypto.hash(:sha256,bin)
   def hash(bin,:sha1), do: :crypto.hash(:sha,bin)
 
-  def body_hash(body,cano_alg,hash_alg,trunc_l \\ nil) do
+  def body_hash(body,sig) do
     body
-    |>canon_body(cano_alg)
-    |>truncate_body(trunc_l)
-    |>hash(hash_alg)
+    |>canon_body(sig.c.body)
+    |>truncate_body(sig.l)
+    |>hash(sig.a.hash)
     |>Base.encode64
   end
-  def headers_hash(headers,sig_h,cano_alg) do
-    sig_h
-    |> String.split(":")
-    |> Enum.map(&String.downcase/1)
+  def headers_hash(headers,sig) do
+    sig.h
     |> Enum.filter(&Dict.has_key?(headers,&1))
-    |> Enum.map(&(canon_header(headers[&1].raw,cano_alg)))
-    |> Enum.concat([headers["dkim-signature"].raw
-                    |>canon_header(cano_alg)
+    |> Enum.map(&(canon_header(headers[&1].raw,sig.c.header)))
+    |> Enum.concat([headers[:"dkim-signature"].raw
+                    |>canon_header(sig.c.header)
                     |>String.replace(~r/b=[^;]*/,"b=")])
     |> Enum.join("\r\n")
   end
 
+  def extract_key64(data64) do
+    case Base.decode64(String.replace(data64,~r/\s/,"")) do
+      {:ok,data}->extract_key(data)
+      _ -> :error
+    end
+  end
   # asn sizeof pubkey,rsapubkey,modulus > 128 <=> len = {1::1,lensize::7,objlen::lensize}
   # asn sizeof exp, algoid < 128 <=> len = {objlen::8}
   # ASN1 pubkey::SEQ(48){ algo::SEQ(48){Algoid,Algoparams}, pubkey::BITSTRING(3) }
@@ -109,7 +117,8 @@ defmodule DKIM do
   def extract_key(<<48,1::size(1)-unit(1),ll0::size(7),_l0::size(ll0)-unit(8),
              2,1::size(1)-unit(1),ll1::size(7),l1::size(ll1)-unit(8),mod::size(l1)-binary,
              2,l2,exp::size(l2)-unit(8)-binary>>) do
-    [exp,mod]
+    {:ok,[exp,mod]}
   end
   def extract_key(<<0,rest::binary>>), do: extract_key(rest) # strip leading 0 if needed
+  def extract_key(_), do: :error
 end

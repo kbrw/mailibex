@@ -8,23 +8,27 @@ defmodule :inet_res do #mock external dns calls to hard define DKIM pub key when
   end
   def lookup(_,_,_), do: []
 end
-defmodule MailibexTest do
+defmodule DKIMTest do
   use ExUnit.Case
 
+  def check(file) do
+    file |> File.read! |> Mailibex.decode |> DKIM.check
+  end
+
   test "DKIM relaxed/relaxed check" do # test cases from mail sended by gmail
-    assert {:ok,_} = DKIM.check(File.read!("test/mails/valid_dkim_relaxed_canon.mail"))
-    assert {:ok,_} = DKIM.check(File.read!("test/mails/valid_dkim_relaxed_uncanon.mail"))
-    assert {:error,:body_hash_no_match} = DKIM.check(File.read!("test/mails/invalid_dkim_bodyh.mail"))
-    assert {:error,{:unavailable_pubkey,_}} = DKIM.check(File.read!("test/mails/invalid_dkim_dns.mail"))
-    assert {:error,:sig_not_match} = DKIM.check(File.read!("test/mails/invalid_dkim_sig.mail"))
+    assert {:ok,_} = check("test/mails/valid_dkim_relaxed_canon.mail")
+    assert {:ok,_} = check("test/mails/valid_dkim_relaxed_uncanon.mail")
+    assert {:error,:body_hash_no_match} = check("test/mails/invalid_dkim_bodyh.mail")
+    assert {:error,{:unavailable_pubkey,_}} = check("test/mails/invalid_dkim_dns.mail")
+    assert {:error,:sig_not_match} = check("test/mails/invalid_dkim_sig.mail")
   end
   test "DKIM relaxed/simple check" do # test cases from mail sended by gen_smtp_client
-    assert {:ok,_} = DKIM.check(File.read!("test/mails/valid_dkim_relaxedsimple_canon.mail"))
-    assert {:ok,_} = DKIM.check(File.read!("test/mails/valid_dkim_relaxedsimple_uncanon.mail"))
-    assert {:error,:body_hash_no_match} = DKIM.check(File.read!("test/mails/invalid_dkim_relaxedsimple_uncanon.mail"))
+    assert {:ok,_} = check("test/mails/valid_dkim_relaxedsimple_canon.mail")
+    assert {:ok,_} = check("test/mails/valid_dkim_relaxedsimple_uncanon.mail")
+    assert {:error,:body_hash_no_match} = check("test/mails/invalid_dkim_relaxedsimple_uncanon.mail")
   end
   test "DKIM simple/simple check" do # test cases from mail sended by gen_smtp_client
-    assert {:ok,_} = DKIM.check(File.read!("test/mails/valid_dkim_simple_canon.mail"))
-    assert {:error,:sig_not_match} = DKIM.check(File.read!("test/mails/invalid_dkim_simple_uncanon.mail"))
+    assert {:ok,_} = check("test/mails/valid_dkim_simple_canon.mail")
+    assert {:error,:sig_not_match} = check("test/mails/invalid_dkim_simple_uncanon.mail")
   end
 end
