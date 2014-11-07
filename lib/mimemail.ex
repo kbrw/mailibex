@@ -58,7 +58,7 @@ defmodule MimeMail do
   def string_to_qp(str) do
     str |> String.split("\r\n") |> Enum.map(fn line->
       {eol,line} = '#{line}' |> Enum.reverse |> Enum.split_while(&(&1==?\t or &1==?\s))
-      enc_line = Enum.concat(Enum.map(eol,&char_to_qp/1),Enum.map(line,fn
+      Enum.concat(Enum.map(eol,&char_to_qp/1),Enum.map(line,fn
         c when c == ?\t or (c < 127 and c > 31 and c !== ?=) -> c
         c -> char_to_qp(c)
       end)) |> Enum.reverse |> Kernel.to_string |> chunk_line
