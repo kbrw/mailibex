@@ -12,7 +12,7 @@ defmodule DKIMTest do
   use ExUnit.Case
 
   def check(file) do
-    file |> File.read! |> Mailibex.decode |> DKIM.check
+    file |> File.read! |> MimeMail.from_string |> DKIM.check
   end
 
   test "DKIM relaxed/relaxed check" do # test cases from mail sended by gmail
@@ -30,5 +30,14 @@ defmodule DKIMTest do
   test "DKIM simple/simple check" do # test cases from mail sended by gen_smtp_client
     assert {:ok,_} = check("test/mails/valid_dkim_simple_canon.mail")
     assert {:error,:sig_not_match} = check("test/mails/invalid_dkim_simple_uncanon.mail")
+  end
+
+  test "DKIM signature" do
+    [rsaentry] =  :public_key.pem_decode(File.read!("test/mails/key.pem"))
+    File.read!("test/mails/valid_dkim_relaxed_canon.mail")
+    |> MimeMail.from_string
+    |> DKIM.sign(:public_key.pem_entry_decode(rsaentry))
+    |> inspect(pretty: true)
+    |> IO.puts
   end
 end

@@ -1,11 +1,13 @@
 defmodule DKIM do
-  def check(%Mailibex{}=mail) do
-    %{headers: headers, raw: body} = Mailibex.with(mail,DKIM)
-    sig = headers[:'dkim-signature'].v
+  defstruct h: [:to,:from,:date,:subject,:"message-id",:"mime-version"], c: %{header: :relaxed, body: :simple},
+            d: "example.org", s: "default", a: %{sig: :rsa, hash: :sha256}, b: "", bh: "", l: nil
+
+  def check(%MimeMail{headers: headers,body: {:raw,body}}=mail) do
+    sig = decode_headers(mail).headers[:'dkim-signature']
     if (sig.bh == body_hash(body,sig)) do
       case :inet_res.lookup('#{sig.s}._domainkey.#{sig.d}', :in, :txt) do
-        [rec|_] -> 
-          pubkey = Mailibex.parse_params(IO.chardata_to_string(rec))
+        [rec|_] ->
+          pubkey = MimeMail.Params.parse_header(IO.chardata_to_string(rec))
           if :"#{pubkey[:k]||"rsa"}" == sig.a.sig do
             case extract_key64(pubkey[:p]||"") do
               {:ok,key}->
@@ -18,50 +20,66 @@ defmodule DKIM do
         _ -> {:error,{:unavailable_pubkey,"#{sig.s}._domainkey.#{sig.d}"}} end
     else {:error,:body_hash_no_match} end
   end
-  def sign(%Mailibex{headers: headers}=mail,sig_params \\ []) do
-    mail=%{mail|headers: Dict.delete(headers,:'dkim-signature')}
+
+  def sign(mail,key,sig_params \\ [], keep \\ true) do
+    sig = struct(DKIM,sig_params)
+    %{body: {:raw,body}}=encoded_mail=MimeMail.encode_body(mail) #ensure body is binary
+    sig = %{sig| bh: body_hash(body,sig)} #add body hash
+    encoded_mail = MimeMail.encode_headers(%{encoded_mail|headers: Dict.put(encoded_mail.headers,:'dkim-signature',sig)}) #encoded mail without dkim.b
+    sig = %{sig| b: encoded_mail.headers |> headers_hash(sig) |> :public_key.sign(:sha256,key)}
+    mail_to_return = if keep, do: mail, else: encoded_mail #return encoded mail by default to save computations
+    %{mail_to_return|headers: Dict.put(encoded_mail.headers,:'dkim-signature',sig)}
   end
 
-  def parse(%Mailibex{headers: headers}=mail,_rec) do
+  def decode_headers(%MimeMail{headers: headers}=mail) do
     case headers[:'dkim-signature'] do
-      %{raw: raw, v: nil}-> 
-        sig = Mailibex.parse_params(raw)
-        |> Dict.update(:c,%{header: :simple,body: :simple},fn sig_c->
-             case String.split(sig_c,"/") do
-               [t] -> %{header: :"#{t}",body: :simple}
-               [t1,t2] -> %{header: :"#{t1}",body: :"#{t2}"}
-               _ -> %{header: :simple,body: :simple}
-             end
-           end)
-        |> Dict.update(:b,"", fn sig_b->
-             case Base.decode64(String.replace(sig_b,~r/\s/,"")) do
-               {:ok,b}->b
-               :error-> ""
-             end
-           end)
-        |> Dict.update(:a,%{sig: :rsa, hash: :sha256}, fn sig_a->
-            case String.split(sig_a,"-") do
-              [sig,hash]->%{sig: :"#{sig}",hash: :"#{hash}"}
-              _ ->%{sig: :rsa, hash: :sha256}
-            end
-           end)
-        |> Dict.update(:l,nil, fn sig_l->
-             case Integer.parse(sig_l) do
-               :error->nil
-               {l,_}->l
-             end
-           end)
-        |> Dict.update(:bh,"", &String.replace(&1,~r/\s/,""))
-        |> Dict.update(:h,[],fn e->e|>String.downcase|>String.split(":")|>Enum.map(&String.to_atom/1) end)
-        put_in(mail,[:headers,:'dkim-signature',:v],sig)
+      raw when is_binary(raw)->
+        unquoted = MimeMail.Header.decode(raw)
+        sig = struct(DKIM,for({k,v}<-MimeMail.Params.parse_header(unquoted),do: {k,decode_field(k,v)}))
+        put_in(mail,[:headers,:'dkim-signature'],sig)
       _ -> mail
     end
   end
 
+  defp decode_field(:c,c) do
+    case String.split(c,"/") do
+      [t] -> %{header: :"#{t}",body: :simple}
+      [t1,t2] -> %{header: :"#{t1}",body: :"#{t2}"}
+      _ -> %{header: :simple,body: :simple}
+    end
+  end
+  defp decode_field(:b,b) do
+    case Base.decode64(String.replace(b,~r/\s/,"")) do
+      {:ok,b}->b
+      :error-> ""
+    end
+  end
+  defp decode_field(:a,a) do
+    case String.split(a,"-") do
+      [sig,hash]->%{sig: :"#{sig}",hash: :"#{hash}"}
+      _ ->%{sig: :rsa, hash: :sha256}
+    end
+  end
+  defp decode_field(:l,l) do
+    case Integer.parse(l) do
+      :error->nil
+      {l,_}->l
+    end
+  end
+  defp decode_field(:bh,bh) do
+    case (bh |> String.replace(~r/\s/,"") |> Base.decode64) do
+      {:ok,b}->b
+      :error-> ""
+    end
+  end
+  defp decode_field(:h,h), do: 
+    (h|>String.downcase|>String.split(":")|>Enum.map(&String.to_atom/1))
+  defp decode_field(_,e), do: e
+
   def canon_header(header,:simple), do: header
   def canon_header(header,:relaxed) do
     [k,v] = String.split(header,~r/\s*:\s*/, parts: 2)
-    "#{String.downcase(k)}:#{v |> Mailibex.unfold |> String.replace(~r"[\t ]+"," ") |> String.rstrip}"
+    "#{String.downcase(k)}:#{v |> MimeMail.Header.unfold |> String.replace(~r"[\t ]+"," ") |> String.rstrip}"
   end
 
   def canon_body(body,:simple), do:
@@ -87,13 +105,12 @@ defmodule DKIM do
     |>canon_body(sig.c.body)
     |>truncate_body(sig.l)
     |>hash(sig.a.hash)
-    |>Base.encode64
   end
   def headers_hash(headers,sig) do
     sig.h
     |> Enum.filter(&Dict.has_key?(headers,&1))
-    |> Enum.map(&(canon_header(headers[&1].raw,sig.c.header)))
-    |> Enum.concat([headers[:"dkim-signature"].raw
+    |> Enum.map(&(canon_header(headers[&1],sig.c.header)))
+    |> Enum.concat([headers[:"dkim-signature"]
                     |>canon_header(sig.c.header)
                     |>String.replace(~r/b=[^;]*/,"b=")])
     |> Enum.join("\r\n")
@@ -121,4 +138,17 @@ defmodule DKIM do
   end
   def extract_key(<<0,rest::binary>>), do: extract_key(rest) # strip leading 0 if needed
   def extract_key(_), do: :error
+end
+
+defimpl MimeMail.ToHeader, for: DKIM do
+  def to_string(dkim) do
+    for({k,v}<-Map.from_struct(dkim), do: "#{k}: #{encode_field(k,v)}")
+    |> Enum.join("; ")
+  end
+  defp encode_field(:h,h), do: Enum.join(h,":")
+  defp encode_field(:c,c), do: "#{c.header}/#{c.body}"
+  defp encode_field(:a,a), do: "#{a.sig}-#{a.hash}"
+  defp encode_field(:bh,bh), do: MimeMail.Header.fold(bh)
+  defp encode_field(:b,b), do: b
+  defp encode_field(_,e), do: Kernel.to_string(e)
 end

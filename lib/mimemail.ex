@@ -95,7 +95,7 @@ defmodule MimeMail.Header do
   def encode(_,value) when is_binary(value), do: value
   def encode(key,value) do
     encoded_value=value |> MimeMail.ToHeader.to_string |> encode_ascii |> fold
-    "#{encode_key(key)}: #{encoded_value}"
+    "#{encode_key("#{key}")}: #{encoded_value}"
   end
   def decode(value) do
     case String.split(value,~r/:\s*/, parts: 2) do
