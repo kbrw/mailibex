@@ -33,8 +33,8 @@ defmodule DKIM do
 
   def decode_headers(%MimeMail{headers: headers}=mail) do
     case headers[:'dkim-signature'] do
-      raw when is_binary(raw)->
-        unquoted = MimeMail.Header.decode(raw)
+      {:raw,raw} ->
+        unquoted = MimeMail.header_value(raw)
         sig = struct(DKIM,for({k,v}<-MimeMail.Params.parse_header(unquoted),do: {k,decode_field(k,v)}))
         put_in(mail,[:headers,:'dkim-signature'],sig)
       _ -> mail
@@ -79,7 +79,7 @@ defmodule DKIM do
   def canon_header(header,:simple), do: header
   def canon_header(header,:relaxed) do
     [k,v] = String.split(header,~r/\s*:\s*/, parts: 2)
-    "#{String.downcase(k)}:#{v |> MimeMail.Header.unfold |> String.replace(~r"[\t ]+"," ") |> String.rstrip}"
+    "#{String.downcase(k)}:#{v |> MimeMail.unfold_header |> String.replace(~r"[\t ]+"," ") |> String.rstrip}"
   end
 
   def canon_body(body,:simple), do:
@@ -107,10 +107,14 @@ defmodule DKIM do
     |>hash(sig.a.hash)
   end
   def headers_hash(headers,sig) do
+    {:raw,rawsig} = headers[:"dkim-signature"]
     sig.h
     |> Enum.filter(&Dict.has_key?(headers,&1))
-    |> Enum.map(&(canon_header(headers[&1],sig.c.header)))
-    |> Enum.concat([headers[:"dkim-signature"]
+    |> Enum.map(fn k->
+         {:raw,v}=headers[k]
+         canon_header(v,sig.c.header)
+        end)
+    |> Enum.concat([rawsig
                     |>canon_header(sig.c.header)
                     |>String.replace(~r/b=[^;]*/,"b=")])
     |> Enum.join("\r\n")
@@ -140,15 +144,18 @@ defmodule DKIM do
   def extract_key(_), do: :error
 end
 
-defimpl MimeMail.ToHeader, for: DKIM do
-  def to_string(dkim) do
-    for({k,v}<-Map.from_struct(dkim), do: "#{k}: #{encode_field(k,v)}")
+defimpl MimeMail.Header, for: DKIM do
+  def to_ascii(dkim) do
+    for({k,v}<-Map.from_struct(dkim), v !== nil,do: "#{k}=#{encode_field(k,v)}")
     |> Enum.join("; ")
   end
   defp encode_field(:h,h), do: Enum.join(h,":")
   defp encode_field(:c,c), do: "#{c.header}/#{c.body}"
   defp encode_field(:a,a), do: "#{a.sig}-#{a.hash}"
-  defp encode_field(:bh,bh), do: MimeMail.Header.fold(bh)
-  defp encode_field(:b,b), do: b
+  defp encode_field(:bh,bh), do: Base.encode64(bh)
+  defp encode_field(:b,b), do: (Base.encode64(b) |> chunk_hard([]) |> Enum.join("\r\n            "))
   defp encode_field(_,e), do: Kernel.to_string(e)
+
+  defp chunk_hard(<<vline::size(50)-binary,rest::binary>>,acc), do: chunk_hard(rest,[vline|acc])
+  defp chunk_hard(other,acc), do: Enum.reverse([other|acc])
 end

@@ -73,4 +73,11 @@ defmodule MimeMailTest do
     assert_raise(ArgumentError, fn->MimeMail.qp_to_string("=21=G1") end)
     assert_raise(ArgumentError, fn->MimeMail.qp_to_string("=21=D1 = g ") end)
   end
+
+  @header "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce at ultrices augue, et vulputate dui. Nullam quis magna quam. Donec venenatis lobortis viverra. Donec at tincidunt urna. Cras et tortor porta mauris cursus dictum. Morbi tempor venenatis tortor eget scelerisque."
+  test "fold header create lines < 76 char" do
+    Enum.each String.split(MimeMail.fold_header(@header),"\r\n"), fn line->
+      assert String.length(line) < 77
+    end
+  end
 end

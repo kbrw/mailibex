@@ -32,12 +32,14 @@ defmodule DKIMTest do
     assert {:error,:sig_not_match} = check("test/mails/invalid_dkim_simple_uncanon.mail")
   end
 
-  test "DKIM signature" do
+  test "DKIM signature round trip" do
     [rsaentry] =  :public_key.pem_decode(File.read!("test/mails/key.pem"))
-    File.read!("test/mails/valid_dkim_relaxed_canon.mail")
-    |> MimeMail.from_string
-    |> DKIM.sign(:public_key.pem_entry_decode(rsaentry))
-    |> inspect(pretty: true)
-    |> IO.puts
+    assert {:ok,_} = 
+      File.read!("test/mails/valid_dkim_relaxed_canon.mail")
+      |> MimeMail.from_string
+      |> DKIM.sign(:public_key.pem_entry_decode(rsaentry), d: "order.brendy.fr", s: "cobrason")
+      |> MimeMail.to_string
+      |> MimeMail.from_string
+      |> DKIM.check
   end
 end
