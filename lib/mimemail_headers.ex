@@ -1,24 +1,35 @@
+defmodule MimeMail.Address do
+  defstruct name: nil, address: ""
+
+  def decode(addr_spec) do
+    case Regex.run(~r/^([^<]*)<([^>]*)>/,addr_spec) do
+      [_,desc,addr]->%MimeMail.Address{name: MimeMail.Words.word_decode(desc), address: addr}
+      _ -> %MimeMail.Address{name: nil, address: String.strip(addr_spec)}
+    end
+  end
+
+  defimpl MimeMail.Header, for: MimeMail.Address do
+    def to_ascii(%{name: nil, address: address}), do: address
+    def to_ascii(%{name: name, address: address}), do:
+      "#{MimeMail.Words.word_encode name} <#{address}>"
+  end
+end
+
 defmodule MimeMail.Emails do
   def parse_header(data) do
-    data
-    |> String.split(~r/\s*,\s*/)
-    |> Enum.map(fn addr_spec->
-      case Regex.run(~r/^([^<]*)<([^>]*)>/,addr_spec) do
-        [_,desc,addr]->%{name: MimeMail.Words.word_decode(desc), address: addr}
-        _ -> %{name: nil, address: String.strip(addr_spec)}
-      end
-    end)
+    data |> String.split(~r/\s*,\s*/) |> Enum.map(&MimeMail.Address.decode/1)
   end
   def decode_headers(%MimeMail{headers: headers}=mail) do
-    parsed_mail_headers=for {k,{:raw,v}}<-headers, k in [:from,:to,:cc,:cci,:'delivered-to'], do: {k,v|>MimeMail.header_value|>parse_header}
-    %{mail| headers: Enum.reduce(parsed_mail_headers,headers, fn {k,v},acc-> Dict.put(acc,k,v) end)}
+    parsed=for {k,{:raw,v}}<-headers, k in [:from,:to,:cc,:cci,:'delivered-to'] do
+      {k,v|>MimeMail.header_value|>parse_header}
+    end
+    %{mail| headers: Enum.reduce(parsed,headers, fn {k,v},acc-> Dict.put(acc,k,v) end)}
   end
   defimpl MimeMail.Header, for: List do # a list header is a mailbox spec list
     def to_ascii(mail_list) do # a mail is a struct %{name: nil, address: ""}
-      mail_list |> Enum.map(fn 
-        %{name: nil,address: address} -> address
-        %{name: name, address: address} -> "#{MimeMail.Words.word_encode name} <#{address}>"
-      end) |> Enum.join(", ")
+      mail_list 
+      |> Enum.filter(&match?(%MimeMail.Address{},&1))
+      |> Enum.map(&MimeMail.Header.to_ascii/1) |> Enum.join(", ")
     end
   end
 end

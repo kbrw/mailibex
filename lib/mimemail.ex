@@ -116,6 +116,7 @@ defmodule MimeMail do
   def fold_header(other,acc), do:
     ((acc |> List.flatten |> Enum.reverse |> Kernel.to_string)<>other)
 
+  def header_value({:raw,value}), do: header_value(value)
   def header_value(value) do
     case String.split(value,~r/:\s*/, parts: 2) do
       [_]->""
