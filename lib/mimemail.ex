@@ -34,7 +34,7 @@ defmodule MimeMail do
   def decode_body(%MimeMail{body: {:raw,body}}=mail) do
     %{headers: headers} = mail = MimeMail.CTParams.decode_headers(mail)
     body = case headers[:'content-transfer-encoding'] do
-      {"quoted-printable",_}-> body |> qp_to_string
+      {"quoted-printable",_}-> body |> qp_to_binary
       {"base64",_}-> body |> String.replace(~r/\s/,"") |> Base.decode64 |> ok_or("")
       _ -> body
     end
@@ -42,7 +42,7 @@ defmodule MimeMail do
       {"multipart/"<>_,%{boundary: bound}}-> 
         body |> String.split(~r"\s*--#{bound}\s*") |> Enum.slice(1..-2) |> Enum.map(&from_string/1) |> Enum.map(&decode_body/1)
       {"text/"<>_,%{charset: charset}} ->
-        body |> Iconv.conv(charset,"utf8") |> ok_or(ensure_ascii(body))
+        body |> Iconv.conv(charset,"utf8") |> ok_or(ensure_ascii(body)) |> ensure_utf8
       _ -> body
     end
     %{mail|body: body}
@@ -91,16 +91,16 @@ defmodule MimeMail do
   defp chunk_line(<<vline::size(75)-binary,rest::binary>>), do: (vline<>"=\r\n"<>chunk_line(rest))
   defp chunk_line(other), do: other
   
-  def qp_to_string(str), do: 
-    (str |> String.rstrip |> String.rstrip(?=) |> qp_to_string([]))
-  def qp_to_string("=\r\n"<>rest,acc), do: 
-    qp_to_string(rest,acc)
-  def qp_to_string(<<?=,x1,x2>><>rest,acc), do: 
-    qp_to_string(rest,[<<x1,x2>> |> String.upcase |> Base.decode16! | acc])
-  def qp_to_string(<<c,rest::binary>>,acc), do:
-    qp_to_string(rest,[c | acc])
-  def qp_to_string("",acc), do:
-    (acc |> Enum.reverse |> Kernel.to_string)
+  def qp_to_binary(str), do: 
+    (str |> String.rstrip |> String.rstrip(?=) |> qp_to_binary([]))
+  def qp_to_binary("=\r\n"<>rest,acc), do: 
+    qp_to_binary(rest,acc)
+  def qp_to_binary(<<?=,x1,x2>><>rest,acc), do: 
+    qp_to_binary(rest,[<<x1,x2>> |> String.upcase |> Base.decode16! | acc])
+  def qp_to_binary(<<c,rest::binary>>,acc), do:
+    qp_to_binary(rest,[c | acc])
+  def qp_to_binary("",acc), do:
+    (acc |> Enum.reverse |> IO.iodata_to_binary)
 
   def unfold_header(value), do: 
     String.replace(value,~r/\r\n([\t ])/,"\\1")
@@ -123,8 +123,12 @@ defmodule MimeMail do
     end
   end
 
-  def ensure_ascii(bin) do
-    for(<<c<-bin>>, (c<127 and c>31) or c in [?\t,?\r,?\n], do: c)
+  def ensure_ascii(bin), do:
+    Kernel.to_string(for(<<c<-bin>>, (c<127 and c>31) or c in [?\t,?\r,?\n], do: c))
+  def ensure_utf8(bin) do
+    bin 
+    |> String.chunk(:printable)
+    |> Enum.filter(&String.printable?/1)
     |> Kernel.to_string
   end
 

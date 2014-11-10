@@ -97,7 +97,7 @@ defmodule MimeMail.Words do
   def single_word_decode("=?"<>rest = str) do
     case String.split(rest,"?") do
       [enc,"Q",enc_str,"="] ->
-        str = q_to_string(enc_str,[])
+        str = q_to_binary(enc_str,[])
         MimeMail.ok_or(Iconv.conv(str,enc,"utf8"),MimeMail.ensure_ascii(str))
       [enc,"B",enc_str,"="] ->
         str = Base.decode64(enc_str) |> MimeMail.ok_or(enc_str)
@@ -107,14 +107,14 @@ defmodule MimeMail.Words do
   end
   def single_word_decode(str), do: "#{str} "
 
-  def q_to_string("_"<>rest,acc), do: 
-    q_to_string(rest,[?\s|acc])
-  def q_to_string(<<?=,x1,x2>><>rest,acc), do: 
-    q_to_string(rest,[<<x1,x2>> |> String.upcase |> Base.decode16! | acc])
-  def q_to_string(<<c,rest::binary>>,acc), do:
-    q_to_string(rest,[c | acc])
-  def q_to_string("",acc), do:
-    (acc |> Enum.reverse |> Kernel.to_string)
+  def q_to_binary("_"<>rest,acc), do: 
+    q_to_binary(rest,[?\s|acc])
+  def q_to_binary(<<?=,x1,x2>><>rest,acc), do: 
+    q_to_binary(rest,[<<x1,x2>> |> String.upcase |> Base.decode16! | acc])
+  def q_to_binary(<<c,rest::binary>>,acc), do:
+    q_to_binary(rest,[c | acc])
+  def q_to_binary("",acc), do:
+    (acc |> Enum.reverse |> IO.iodata_to_binary)
 
   def decode_headers(%MimeMail{headers: headers}=mail) do
     parsed_mail_headers=for {k,{:raw,v}}<-headers, k in [:subject], do: {k,v|>MimeMail.header_value|>word_decode}
