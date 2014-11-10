@@ -1,0 +1,96 @@
+Delivered-To: arnaud.wetzel@gmail.com
+Received: by 10.107.10.204 with SMTP id 73csp8418iok;
+        Sun, 9 Nov 2014 14:47:49 -0800 (PST)
+X-Received: by 10.194.161.232 with SMTP id xv8mr36213161wjb.99.1415573268543;
+        Sun, 09 Nov 2014 14:47:48 -0800 (PST)
+Return-Path: <frnog-owner@frnog.org>
+Received: from cabale.usenet-fr.net (cabale.usenet-fr.net. [217.24.82.4])
+        by mx.google.com with ESMTP id hi1si26595694wjc.7.2014.11.09.14.47.47
+        for <multiple recipients>;
+        Sun, 09 Nov 2014 14:47:48 -0800 (PST)
+Received-SPF: pass (google.com: domain of frnog-owner@frnog.org designates 217.24.82.4 as permitted sender) client-ip=217.24.82.4;
+Authentication-Results: mx.google.com;
+       spf=pass (google.com: domain of frnog-owner@frnog.org designates 217.24.82.4 as permitted sender) smtp.mail=frnog-owner@frnog.org
+Received: by cabale.usenet-fr.net (Postfix, from userid 90)
+	id D4DAE98A5DAC; Sun,  9 Nov 2014 23:47:47 +0100 (CET)
+X-Original-To: frnog@frnog.org
+Delivered-To: frnog@frnog.org
+Received: from mail-wg0-f44.google.com (mail-wg0-f44.google.com [74.125.82.44])
+	by cabale.usenet-fr.net (Postfix) with ESMTP id CB0DE98A50AF
+	for <frnog@frnog.org>; Sun,  9 Nov 2014 23:46:38 +0100 (CET)
+Received: by mail-wg0-f44.google.com with SMTP id x12so7479921wgg.17
+        for <frnog@frnog.org>; Sun, 09 Nov 2014 14:46:38 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20130820;
+        h=x-gm-message-state:message-id:date:from:user-agent:mime-version:to
+         :subject:content-type:content-transfer-encoding;
+        bh=cojT81ubee08o3zgiVH1YsbmGvquDupTx7lx6cmTj0Q=;
+        b=c9p4/3zC9mMxBu72kvnPA95o9nBktADzv6AsEeISMvUfQSBXKoFpI0b1dS2T9x8Nhs
+         nXT5Le7iPwQBrjM2OvJ1LPTRxD2KD5uC0w3pAo0EpM8ir4OGDeS7kG5jbKVwQHv4UNmb
+         2SJzVOem8p59kndyJWBaT26vLbJWJjSBLtByAvBpkXy8ksAUoe7DVjyVQETuCIURiCFo
+         76cpWLhdpmt1FZgNCOAlZd42dF7sGMKrgi6K34Oq4Kw60eDG6gaWu5VBJGqGwOrvjFi4
+         4JUQDWOikdWdinq7uoWIGD3Zk6H4EoOuQk2iDo6atp/HnEjuCAHKlH88+P0945nW1V3q
+         KAKA==
+X-Gm-Message-State: ALoCoQnwpfzlxigwjdGYflsvoKhRZBEDQaPqtBYYs/iHowvPTbQuSJUQSjGhJ5OoKbiO6/21OL25
+X-Received: by 10.194.240.232 with SMTP id wd8mr58447wjc.135.1415573198651;
+        Sun, 09 Nov 2014 14:46:38 -0800 (PST)
+Received: from [192.168.2.149] (crj95-h02-176-189-132-12.dsl.sta.abo.bbox.fr. [176.189.132.12])
+        by mx.google.com with ESMTPSA id w5sm11050017wif.18.2014.11.09.14.46.37
+        for <frnog@frnog.org>
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Sun, 09 Nov 2014 14:46:37 -0800 (PST)
+Message-ID: <545FEECC.6070207@ceriz.fr>
+Date: Sun, 09 Nov 2014 23:46:36 +0100
+From: =?UTF-8?B?SsOpcsO0bWUgTmljb2xsZQ==?= <jerome@ceriz.fr>
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:31.0) Gecko/20100101 Thunderbird/31.2.0
+MIME-Version: 1.0
+To: frnog@frnog.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Subject: [FRnOG] =?UTF-8?Q?=5BTECH=5D_ToS_impl=C3=A9ment=C3=A9e_chez_certa?=
+ =?UTF-8?Q?ins_transitaires?=
+X-Loop: frnog@frnog.org
+X-Sequence: 2799
+Errors-to: frnog-owner@frnog.org
+Precedence: list
+Precedence: bulk
+Sender: frnog-request@frnog.org
+X-mailing-list: frnog@frnog.org
+List-Id: <frnog.frnog.org>
+List-Archive: <http://sympa.frnog.org/wss/arc/frnog>
+List-Help: <mailto:sympa@frnog.org?subject=help>
+List-Owner: <mailto:frnog-request@frnog.org>
+List-Post: <mailto:frnog@frnog.org>
+List-Subscribe: <mailto:sympa@frnog.org?subject=subscribe%20frnog>
+List-Unsubscribe: <mailto:sympa@frnog.org?subject=unsubscribe%20frnog>
+
+Plop,
+
+TL;DR: Depuis au moins février 2014, Cogent prioritarise les paquets en
+fonction de "classes" de client sur certaines portions de son réseau.
+
+Histoire de bien commencer la semaine, un peu de lecture :
+
+http://www1.icsi.berkeley.edu/~srikanth/tos.html
+
+http://blog.streamingmedia.com/2014/11/cogent-now-admits-slowed-netflixs-traffic-creating-fast-lane-slow-lane.html
+
+Je trouve étrange que les marqueurs ne disparaissent pas au moment de
+sortir de leur réseau, mais on dirait bien que cette pratique n'est plus
+un tabou. Ca implique, entre autres, qu'elle pourrait se généraliser.
+
+Est ce que vous avez déjà remarqué ce genre de situations ? En tant que
+transitaires, envisagez vous de vendre du trafic prioritaire et du
+low-cost ainsi différencié ? Point de vue eyeball, est ce que ça a du
+sens de maintenir ces ToS jusqu'aux PE ?
+
+@+
+
+-- 
+Jérôme Nicolle
+06 19 31 27 14
+
+
+---------------------------
+Liste de diffusion du FRnOG
+http://www.frnog.org/
