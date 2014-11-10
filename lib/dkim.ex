@@ -5,7 +5,7 @@ defmodule DKIM do
   def check(%MimeMail{headers: headers,body: {:raw,body}}=mail) do
     sig = decode_headers(mail).headers[:'dkim-signature']
     if (sig.bh == body_hash(body,sig)) do
-      case :inet_res.lookup('#{sig.s}._domainkey.#{sig.d}', :in, :txt) do
+      case :inet_res.lookup('#{sig.s}._domainkey.#{sig.d}', :in, :txt, edns: 0) do
         [rec|_] ->
           pubkey = MimeMail.Params.parse_header(IO.chardata_to_string(rec))
           if :"#{pubkey[:k]||"rsa"}" == sig.a.sig do

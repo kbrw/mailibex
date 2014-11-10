@@ -1,0 +1,883 @@
+Delivered-To: arnaud.wetzel@gmail.com
+Received: by 10.49.106.193 with SMTP id gw1csp117168qeb;
+        Mon, 7 Oct 2013 14:42:30 -0700 (PDT)
+X-Received: by 10.236.90.114 with SMTP id d78mr2345268yhf.94.1381182149620;
+        Mon, 07 Oct 2013 14:42:29 -0700 (PDT)
+Return-Path: <2013100721422748c31a5a9fc74247b400ac4421db87b4@bounces.amazon.fr>
+Received: from mm-notify-out-127-217.amazon.com (mm-notify-out-127-217.amazon.com. [176.32.127.217])
+        by mx.google.com with ESMTP id g27si11840446yhh.163.1969.12.31.16.00.00;
+        Mon, 07 Oct 2013 14:42:29 -0700 (PDT)
+Received-SPF: pass (google.com: domain of 2013100721422748c31a5a9fc74247b400ac4421db87b4@bounces.amazon.fr designates 176.32.127.217 as permitted sender) client-ip=176.32.127.217;
+Authentication-Results: mx.google.com;
+       spf=pass (google.com: domain of 2013100721422748c31a5a9fc74247b400ac4421db87b4@bounces.amazon.fr designates 176.32.127.217 as permitted sender) smtp.mail=2013100721422748c31a5a9fc74247b400ac4421db87b4@bounces.amazon.fr;
+       dkim=pass header.i=confirmation-commande@amazon.fr;
+       dmarc=pass (p=QUARANTINE dis=NONE) header.from=amazon.fr
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=amazon.fr; i=confirmation-commande@amazon.fr;
+  q=dns/txt; s=amazon201209; t=1381182243; x=1412718243;
+  h=date:from:to:message-id:subject:mime-version;
+  z=Date:=20Mon,=207=20Oct=202013=2021:42:27=20+0000|From:
+   =20"confirmation-commande@amazon.fr"=20<confirmation-comm
+   ande@amazon.fr>|To:=20"arnaud.wetzel@gmail.com"=20<arnaud
+   .wetzel@gmail.com>|Message-ID:=20<urn.correios.msg.201310
+   0721422748c31a5a9fc74247b400ac4421db87b4@1381182147991.rt
+   e-svc-eu-14012.dub4.amazon.com>|Subject:=20Amazon.fr:=20v
+   otre=20commande|MIME-Version:=201.0;
+  bh=fVaRYF+M01opGYD0XIE/PYADumOh+KxyqD09JzxYCdM=;
+  b=DO9u+wfF4dED3/48VwV/yWhNO0wbQ7SNsMZTFAHaMvX44B2CaO93iyaY
+   CCyEbJW1kGX/gpP9QxfJ/PTmsyyw5Xs/6VsTd8uwKplPJdZEvzatKP0yV
+   Sr/3Y12vXdBTOXsUR3u42iLdHYYwMBE7tlog43tupo2l1e4JAWYVktWoU
+   g=;
+Date: Mon, 7 Oct 2013 21:42:27 +0000
+From: "confirmation-commande@amazon.fr" <confirmation-commande@amazon.fr>
+To: "arnaud.wetzel@gmail.com" <arnaud.wetzel@gmail.com>
+Message-ID: <urn.correios.msg.2013100721422748c31a5a9fc74247b400ac4421db87b4@1381182147991.rte-svc-eu-14012.dub4.amazon.com>
+Subject: Amazon.fr: votre commande
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_640181_23426618.1381182147988"
+Bounces-to: 2013100721422748c31a5a9fc74247b400ac4421db87b4@bounces.amazon.fr
+X-AMAZON-MAIL-RELAY-TYPE: notification
+X-AMAZON-RTE-VERSION: 2.0
+X-Original-MessageID: <urn.correios.msg.2013100721422748c31a5a9fc74247b400ac4421db87b4@1381182147991.rte-svc-eu-14012.dub4.amazon.com>
+
+------=_Part_640181_23426618.1381182147988
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_640182_3478264.1381182147988"
+
+------=_Part_640182_3478264.1381182147988
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Merci de votre commande sur Amazon.fr. Voici les informations concernant vo=
+tre commande.
+
+Voulez-vous g=C3=A9rer votre commande en ligne=C2=A0?
+
+  Si vous avez besoin de consulter l'=C3=A9tat de votre commande ou si vous=
+ devez la modifier, veuillez vous rendre sur la page d'accueil www.Amazon.f=
+r puis cliquez sur Votre compte en haut de toutes les pages de notre  site.
+***********************************************************
+FACTURATION ET LIVRAISON
+***********************************************************
+Adresse e-mail&nbsp;:=09arnaud.wetzel@gmail.com
+Adresse de facturation&#160;:
+
+Wetzel Arnaud
+19 rue Ruhmkorff
+2=C3=A8me =C3=A9tage en face
+Paris,  75017
+France
+
+Montant total de la commande: EUR 9,41
+
+***********************************************************
+=09COMMANDE
+***********************************************************
+
+Infos livraison=20
+
+commande exp=C3=A9di=C3=A9e en 1 colis
+
+***********************************************************
+Num=C3=A9ro de commande :=09=09=09404-4293429-8241143
+Consultez votre r=C3=A9capitulatif de commande en ligne: https://www.amazon=
+.fr/gp/css/order-history/ref=3Dox_oce_txt_order_summary_fr
+
+Mode de livraison:=09=09Livraison en 1 jour ouvr=C3=A9
+
+Articles&nbsp;:               EUR 8,92
+Livraison :                   EUR 0,00
+                              ---------
+Total HT=C2=A0:                    EUR 8,92
+TVA :                         EUR 0,49
+                              ---------
+Montant total&nbsp;:          EUR 9,41
+
+Adresse de livraison
+
+Wetzel Arnaud
+19 rue Ruhmkorff
+2=C3=A8me =C3=A9tage en face
+Paris,  75017
+France
+
+Date de livraison estim=C3=A9e : 9 octobre 2013
+
+1 "Cojean tout simplement. 50 recettes fra=C3=AEches et =C3=A9quilibr=C3=A9=
+es"
+Alain Cojean; Broch=C3=A9; EUR 9,41=20
+En stock
+Vendu par : Amazon EU S.a.r.L.
+
+***********************************************************
+Un cadeau =C3=A0 offrir ? Vous ne savez pas quoi choisir ?
+Pensez aux ch=C3=A8ques-cadeaux Amazon.fr, e-mail, =C3=A0 imprimer =C3=A0 d=
+omicile ou papier, valables sur tous nos produits (montant de votre choix d=
+e 5 =C3=A0 1000 euros).
+C'est le parfait cadeau de derni=C3=A8re minute !
+
+  Pour en savoir plus: http://www.amazon.fr/cheques-cadeaux/
+***********************************************************
+
+  Pour toute question, consultez nos pages d'aide disponibles 24h/24: http:=
+//www.amazon.fr/aide
+
+***********************************************************
+Veuillez noter que cet e-mail a =C3=A9t=C3=A9 envoy=C3=A9 depuis une adress=
+e qui ne peut recevoir de r=C3=A9ponse. Merci de ne pas r=C3=A9pondre =C3=
+=A0 ce message.
+Merci d'avoir choisi Amazon.fr!
+-------------------------------------------------------------=20
+
+  Amazon.fr
+
+  Trouvez votre bonheur parmi des millions d'articles
+
+  http://www.amazon.fr
+-------------------------------------------------------------
+
+------=_Part_640182_3478264.1381182147988
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+
+
+
+
+
+
+
+
+ =20
+
+ =20
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.=
+w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns=3D"http://www.w3.org/1999/xhtml">
+<head>
+    <title>Amazon.fr: votre commande</title>
+</head>
+<body bgcolor=3D"#FFFFFF" link=3D"#0066CC">
+ =20
+
+
+<table border=3D"0" width=3D"100%" cellspacing=3D"0" cellpadding=3D"0">
+  <tr bgcolor=3D"#FFFFFF">
+    <td align=3D"left">
+     =20
+
+ =20
+
+  <a href=3D"http://www.amazon.fr/ref=3Dox_oce_topnav_home_fr"><img src=3D"=
+https://images-na.ssl-images-amazon.com/images/G/08/x-locale/common/amazon-=
+logo._V165135655_.gif" width=3D"141" alt=3D"Amazon.fr" height=3D"42" border=
+=3D"0" /></a>
+    </td>
+    <td align=3D"right" class=3D"topnav_header" style=3D"font-size:12px;tex=
+t-decoration:none;color:black"><b>
+      <a href=3D"http://www.amazon.fr/gp/cart/view.html/ref=3Dox_oce_cart_f=
+r"><img src=3D"https://images-na.ssl-images-amazon.com/images/G/08/x-locale=
+/common/icons/topnav-cart._V192553744_.gif" width=3D"19" alt=3D"PANIER" hei=
+ght=3D"16" border=3D"0" />&nbsp;PANIER</a>
+    |
+      <a href=3D"http://www.amazon.fr/gp/registry/wishlist/ref=3Dox_oce_wl_=
+fr">LISTE D'ENVIES</a>
+    |=20
+      <a href=3D"http://www.amazon.fr/gp/css/homepage.html/ref=3Dox_oce_yr_=
+fr">VOTRE COMPTE</a>
+    |
+      <a href=3D"http://www.amazon.fr/gp/help/customer/display.html/ref=3Do=
+x_oce_nav_top_hlp_fr">AIDE</a>
+    </b></td>
+  </tr>
+</table>
+
+
+
+
+
+<table width=3D"90%" border=3D"0" cellspacing=3D"0" cellpadding=3D"1" align=
+=3D"center" bgcolor=3D"#006699">
+  <tr>
+    <td>
+      <table width=3D"100%" border=3D"0" cellspacing=3D"0" cellpadding=3D"5=
+" align=3D"center">
+        <tr valign=3D"top">
+          <td bgcolor=3D"#FFFFFF">
+            <font  face=3D"verdana,arial,helvetica" size=3D"-1" >
+              <p><b>
+
+                Merci pour votre commande Arnaud Wetzel
+              </b></p>
+
+
+              <p><b>Voulez-vous g=C3=A9rer votre commande en ligne=C2=A0?</=
+b><br />
+              =20
+
+  Si vous avez besoin de consulter l'=C3=A9tat de votre commande ou si vous=
+ devez la modifier, veuillez vous rendre sur la page d'accueil www.Amazon.f=
+r puis cliquez sur Votre compte en haut de toutes les pages de notre  site.=
+<br />
+              </p>
+            </font>
+            <table cellpadding=3D"4" cellspacing=3D"0" border=3D"0" width=
+=3D"100%">
+              <tr>
+=09        <td colspan=3D"2" bgcolor=3D"#006699">
+=09          <font color=3D"#ffffff"  face=3D"verdana,arial,helvetica" size=
+=3D"-1" ><b>Informations&nbsp;:</b></font>
+=09              </td>
+                </tr>
+              <tr>
+=09        <td colspan=3D"2">
+                  <font  face=3D"verdana,arial,helvetica" size=3D"-1" >
+                    <b>Adresse e-mail&nbsp;:</b>&nbsp;&nbsp;arnaud.wetzel@g=
+mail.com
+=09          </font>
+=09        </td>
+              </tr>
+              <tr>
+=09        <td colspan=3D"2">
+=09          <table width=3D"100%" cellspacing=3D0 cellpadding=3D0>
+=09            <tr>
+=09              <td valign=3D"top" width=3D"50%" style=3D"padding-right:1e=
+m">
+                        <font  face=3D"verdana,arial,helvetica" size=3D"-1"=
+ >
+=09=09          <b>Adresse de facturation&#160;:</b><br />
+                            Wetzel Arnaud<br/>19 rue Ruhmkorff<br/>2=C3=A8m=
+e =C3=A9tage en face<br/>Paris,  75017<br/>France<br/><br/>
+=09=09         </font>
+=09               </td>
+                       <td valign=3D"top" width=3D"50%">=20
+                         <font  face=3D"verdana,arial,helvetica" size=3D"-1=
+" >
+                         <b>Adresse de livraison&nbsp;:</b><br />
+                        Wetzel Arnaud<br/>19 rue Ruhmkorff<br/>2=C3=A8me =
+=C3=A9tage en face<br/>Paris,  75017<br/>France<br/><br/>
+=09=09          </font>
+=09                </td>
+=09              </tr>
+=09            </table>
+=09          </td>
+              </tr>
+              <tr>
+=09        <td colspan=3D"2">
+                  <font  face=3D"verdana,arial,helvetica" size=3D"-1" >
+=09            <b>Montant total de la commande: EUR 9,41</b>
+=09          </font>
+=09          </td>
+              </tr>
+
+
+
+
+              <tr>
+                <td colspan=3D"2" bgcolor=3D"#006699">
+                  <font color=3D"#ffffff"  face=3D"verdana,arial,helvetica"=
+ size=3D"-1" ><b>R&eacute;capitulatif de commande&nbsp;:</b></font>
+                </td>
+              </tr>
+
+
+
+
+              <tr>
+                <td bgcolor=3D#EEEEEE>
+
+
+                  <font  face=3D"verdana,arial,helvetica" size=3D"-1"  colo=
+r=3D"#CC6600"><b>
+
+                      Infos livraison
+                      : commande exp=C3=A9di=C3=A9e en 1 colis
+
+                  </b></font>
+
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <table border=3D"0" cellpadding=3D"1" cellspacing=3D"0" w=
+idth=3D"100%">
+
+
+
+                            <tr>
+                                <td nowrap=3D"nowrap">
+                                  <font  face=3D"verdana,arial,helvetica" s=
+ize=3D"-1" >
+                                    <b>Commande n&deg;</b>
+                                   </font>
+                                </td>
+                                <td width=3D"98%">
+                                  <font  face=3D"verdana,arial,helvetica" s=
+ize=3D"-1" >
+                                    <a href=3D"https://www.amazon.fr/gp/css=
+/order-history/ref=3Dox_oce_order_history_fr">404-4293429-8241143</a>
+                                  </font>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td nowrap=3D"nowrap">
+                                <font  face=3D"verdana,arial,helvetica" siz=
+e=3D"-1" >
+                                    <b>Mode de livraison:</b>
+                                </font>
+                                </td>
+                                <td width=3D"98%">
+                                  <font  face=3D"verdana,arial,helvetica" s=
+ize=3D"-1" >
+                                    Livraison en 1 jour ouvr=C3=A9
+                                  </font>
+                                </td>
+                            </tr>
+
+                           =20
+
+        <tr>
+          <td nowrap=3D"nowrap">
+            <span class=3D"small">=20
+              <font face=3D"verdana,arial,helvetica" size=3D"-1">
+                Articles&nbsp;: &nbsp;
+              </font>
+            </span>
+          </td>
+          <td>
+            <span class=3D"small">
+              <font face=3D"verdana,arial,helvetica" size=3D"-1">
+                EUR 8,92=20
+              </font>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td nowrap=3D"nowrap">
+            <span class=3D"small">=20
+              <font face=3D"verdana,arial,helvetica" size=3D"-1">
+                Livraison : &nbsp;
+              </font>
+            </span>
+          </td>
+          <td>
+            <span class=3D"small">
+              <font face=3D"verdana,arial,helvetica" size=3D"-1">
+                EUR 0,00=20
+              </font>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            &nbsp;
+          </td>
+          <td>
+            ------
+          </td>
+        </tr>
+        <tr>
+          <td nowrap=3D"nowrap">
+            <span class=3D"small">=20
+              <font face=3D"verdana,arial,helvetica" size=3D"-1">
+                Total HT=C2=A0: &nbsp;
+              </font>
+            </span>
+          </td>
+          <td>
+            <span class=3D"small">
+              <font face=3D"verdana,arial,helvetica" size=3D"-1">
+                EUR 8,92=20
+              </font>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td nowrap=3D"nowrap">
+            <span class=3D"small">=20
+              <font face=3D"verdana,arial,helvetica" size=3D"-1">
+                TVA : &nbsp;
+              </font>
+            </span>
+          </td>
+          <td>
+            <span class=3D"small">
+              <font face=3D"verdana,arial,helvetica" size=3D"-1">
+                EUR 0,49=20
+              </font>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            &nbsp;
+          </td>
+          <td>
+            ------
+          </td>
+        </tr>
+        <tr>
+          <td nowrap=3D"nowrap">
+            <span class=3D"small">
+              <font face=3D"verdana,arial,helvetica" size=3D"-1">
+                <b>=20
+                  Montant total&nbsp;: &nbsp;
+                </b>
+              </font>
+            </span>
+          </td>
+          <td>
+            <span class=3D"small">
+              <font face=3D"verdana,arial,helvetica" size=3D"-1">
+                <b>=20
+                  EUR 9,41=20
+                </b>
+              </font>
+            </span>
+          </td>
+        </tr>
+
+
+
+
+
+
+                            <tr>
+                                <td colspan=3D"2">
+                                  <font  face=3D"verdana,arial,helvetica" s=
+ize=3D"-1" >
+                                  <br />&nbsp;<br />
+
+
+   =20
+
+
+
+
+
+
+
+                  <b>Date de livraison estim=C3=A9e : </b>9 octobre 2013
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                  </font>
+                                  <table>
+
+                                    <tr valign=3D"top">
+                                        <td>
+                                        </td>
+                                        <td><font  face=3D"verdana,arial,he=
+lvetica" size=3D"-1" ><b>1</b></font></td>
+
+
+<td>
+<font  face=3D"verdana,arial,helvetica" size=3D"-1" >
+  <b>"Cojean tout simplement. 50 recettes fra=C3=AEches et =C3=A9quilibr=C3=
+=A9es"</b><br />
+     Alain Cojean;
+     Broch=C3=A9;
+
+
+    <span class=3D"price">EUR 9,41 </span><br />
+
+
+
+     En stock<br />&nbsp;&nbsp;
+
+  Vendu par : <a href=3D"http://www.amazon.fr/gp/help/seller/home.html/ref=
+=3Dox_oce_seller_home_fr?ie=3DUTF8&amp;seller=3DA1X6FK5RDHNB96">Amazon EU S=
+.a.r.L.</a>
+
+
+
+</font>
+</td>
+
+
+                                     </tr>
+
+
+
+                                </table>
+                               =20
+
+
+                                </td>
+                            </tr>
+
+
+
+
+                  </table>
+=09              </td>
+              </tr>
+
+
+
+                <tr>
+=09=09  <td>
+=09           <hr noshade=3D"noshade" size=3D"1" />
+
+
+
+
+
+
+    <p>
+    <font face=3D"verdana,arial,helvetica" size=3D"-1" >
+ &nbsp;
+    </font>
+</p>
+
+
+
+
+<p> <font face=3D"verdana,arial,helvetica" size=3D"-1"><b>O=C3=B9 puis-je o=
+btenir de l'aide sur la gestion ou la modification de mes commandes=C2=A0?<=
+/b> <br />
+
+
+  Pour en savoir plus sur la gestion de vos commandes sur Amazon.fr, veuill=
+ez consulter nos pages d'aide sur www.amazon.fr/aide/.<br><br>Le vendeur po=
+urra vous demander des informations compl=C3=A9mentaires tel que le num=C3=
+=A9ro de TVA ou le code fiscal, afin d'=C3=A9mettre une facture valide. <br=
+ /></font> </p>
+
+
+    <p>
+    <font face=3D"verdana,arial,helvetica" size=3D"-1">
+       Veuillez noter que cet e-mail a =C3=A9t=C3=A9 envoy=C3=A9 depuis une=
+ adresse qui ne peut recevoir de r=C3=A9ponse. Merci de ne pas r=C3=A9pondr=
+e =C3=A0 ce message.
+    </font>
+    </p>
+
+    <p>
+    <font face=3D"verdana,arial,helvetica" size=3D"-1">
+       Merci d'avoir choisi Amazon.fr!
+    </font>
+     </p>
+    <p>
+    <font face=3D"verdana,arial,helvetica" size=3D"-1">
+      <b>
+=09
+
+  <a href=3D"http://www.amazon.fr/ref=3Dox_oce_homepage_fr">Amazon.fr</a></=
+b>
+
+      <br /><b>
+ =20
+
+  Trouvez votre bonheur parmi des millions d'articles
+      </b>
+    </font>
+    </p>
+
+
+
+
+    <p>
+    <font face=3D"verdana,arial,helvetica" size=3D"-1">
+      <img src=3D"https://images-na.ssl-images-amazon.com/images/G/08/x-loc=
+ale/common/icons/icon-unsubscribe._V192553754_.gif" width=3D"17" height=3D"=
+15" border=3D"0" />&nbsp;
+      Vous ne souhaitez pas recevoir votre e-mail au format HTML&nbsp;?
+
+
+  <a href=3D"https://www.amazon.fr/gp/gss/ccp/ref=3Dox_oce_email_preference=
+_fr">Cliquez ici</a>
+  </font>
+      </p>
+=09=09=09  </td>
+=09=09=09</tr>
+=09=09      </table>
+ </td>
+                   <td valign=3D"top"  bgcolor=3D"#e1e4da" width=3D"180">
+
+                     =20
+
+
+
+<table border=3D"0" width=3D"100%" cellpadding=3D"1" cellspacing=3D"0" bgco=
+lor=3D"#006699"><tr><td><table border=3D"0" cellpadding=3D"1" cellspacing=
+=3D"0" width=3D"100%"><tr><td class=3D"h1" bgcolor=3D"#006699" valign=3D"to=
+p" align=3D"center"><b><font color=3D#FFFFFF>Conseils personnalis&eacute;s =
+pour votre prochaine visite&nbsp;:</b><br /></font></td></tr><tr><td bgcolo=
+r=3D"#FFFFFF" align=3Dcenter>
+
+
+<a href=3D"http://www.amazon.fr/exec/obidos/ASIN/2842213130/ref=3Dpe_thx_si=
+ms_1">Solo et Bio</a><br /> de Clea<br />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</td></tr></table></td></tr></table><br /><table border=3D"0" width=3D"100%=
+" cellpadding=3D"1" cellspacing=3D"0" bgcolor=3D"#006699"><tr><td><table bo=
+rder=3D"0" width=3D"100%" cellpadding=3D"5" cellspacing=3D"0"><tr><td align=
+=3Dcenter bgcolor=3D"FFFFFF">
+
+
+<a href=3D"http://www.amazon.fr/exec/obidos/ASIN/2842213114/ref=3Dpe_thx_si=
+ms_2">Recevoir en bio</a><br /> de Clea<br />
+
+
+
+
+
+
+
+
+
+
+
+
+
+</td></tr></table></td></tr></table><br /><table border=3D"0" width=3D"100%=
+" cellpadding=3D"1" cellspacing=3D"0" bgcolor=3D"#006699"><tr><td><table bo=
+rder=3D"0" width=3D"100%" cellpadding=3D"5" cellspacing=3D"0"><tr><td align=
+=3Dcenter bgcolor=3D"FFFFFF">
+
+
+<a href=3D"http://www.amazon.fr/exec/obidos/ASIN/2501076389/ref=3Dpe_thx_si=
+ms_3">Ceci n'est pas un r=C3=A9gime... Les 100 recettes</a><br /> de Lauren=
+ce Salomon<br />
+
+
+
+
+
+
+
+
+
+
+
+
+
+</td></tr></table></td></tr></table><br /><table border=3D"0" width=3D"100%=
+" cellpadding=3D"1" cellspacing=3D"0" bgcolor=3D"#006699"><tr><td><table bo=
+rder=3D"0" width=3D"100%" cellpadding=3D"5" cellspacing=3D"0"><tr><td align=
+=3Dcenter bgcolor=3D"FFFFFF">
+
+
+<a href=3D"http://www.amazon.fr/exec/obidos/ASIN/2501087410/ref=3Dpe_thx_si=
+ms_4">Frozen Yogurt =C3=A0 la fran=C3=A7aise</a><br /> de It Milk<br />
+
+
+
+
+
+
+
+
+
+
+
+
+
+</td></tr></table></td></tr></table><br />
+
+
+
+  <b class=3D"small">
+  <img src=3D"https://images-na.ssl-images-amazon.com/images/G/08/x-locale/=
+common/orange-arrow._V192553965_.gif" width=3D"10" height=3D"9" border=3D"0=
+" />
+  Voir tous vos <a href=3D"http://www.amazon.fr/gp/yourstore/recs">Conseils=
+ personnalis=C3=A9s</a>
+  </b>
+ =20
+
+
+                   </td>
+                   </tr>
+                </table>
+              </td>
+             </tr>
+         </table>
+</body>
+</html>
+
+------=_Part_640182_3478264.1381182147988--
+
+------=_Part_640181_23426618.1381182147988--
