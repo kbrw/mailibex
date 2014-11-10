@@ -25,8 +25,8 @@ Need more explanations here...
 
 ## Current Status
 
-- DKIM is fully implemented (signature/check)
-- mimemail encoding/decoding partially implemented (missing tests)
+- DKIM is fully implemented (signature/check), missing DKIM-Quoted-Printable token management
+- mimemail encoding/decoding of headers and body are fully implemented, missing tests
 
 ## TODO :
 

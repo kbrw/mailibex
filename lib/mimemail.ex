@@ -16,7 +16,7 @@ defmodule MimeMail do
   end
 
   def to_string(%MimeMail{}=mail) do
-    %{body: {:raw,body},headers: headers} = mail |> encode_headers |> encode_body
+    %{body: {:raw,body},headers: headers} = mail |> encode_body |> encode_headers
     headers = for({_k,{:raw,v}}<-headers,do: v) |> Enum.join("\r\n")
     headers <> "\r\n\r\n" <> body
   end
@@ -28,18 +28,21 @@ defmodule MimeMail do
     %{mail|headers: for({k,v}<-headers, do: {k,encode_header(k,v)})}
   end
 
+  def ok_or({:ok,res},_), do: res
+  def ok_or(_,default), do: default
+
   def decode_body(%MimeMail{body: {:raw,body}}=mail) do
     %{headers: headers} = mail = MimeMail.CTParams.decode_headers(mail)
-    body = case headers[:'content-disposition'] do
+    body = case headers[:'content-transfer-encoding'] do
       {"quoted-printable",_}-> body |> qp_to_string
-      {"base64",_}-> body |> String.replace(~r/\s/,"") |> Base.decode64!
+      {"base64",_}-> body |> String.replace(~r/\s/,"") |> Base.decode64 |> ok_or("")
       _ -> body
     end
     body = case headers[:'content-type'] do
       {"multipart/"<>_,%{boundary: bound}}-> 
-        body |> String.split(bound) |> Enum.map(&from_string/1) |> Enum.map(&decode_body/1)
+        body |> String.split(~r"\s*--#{bound}\s*") |> Enum.slice(1..-2) |> Enum.map(&from_string/1) |> Enum.map(&decode_body/1)
       {"text/"<>_,%{charset: charset}} ->
-        body |> Iconv.conv(charset,"utf8")
+        body |> Iconv.conv(charset,"utf8") |> ok_or(ensure_ascii(body))
       _ -> body
     end
     %{mail|body: body}
@@ -51,22 +54,26 @@ defmodule MimeMail do
     mail = MimeMail.CTParams.decode_headers(mail)
     case mail.headers[:'content-type'] do
       {"text/"<>_=type,params}-> 
-        headers = mail.headers 
-        |> Dict.put(:'content-type',{type,Dict.put(params,:charset,"utf-8")})
-        |> Dict.put(:'content-transfer-encoding',"quoted-printable")
+        headers = Dict.drop(mail.headers,[:'content-type',:'content-transfer-encoding']) ++[
+          'content-type': {type,Dict.put(params,:charset,"utf-8")},
+          'content-transfer-encoding': "quoted-printable"
+        ]
         %{mail|headers: headers, body: {:raw,string_to_qp(body)}}
       _->
-        headers = mail.headers |> Dict.put(:'content-transfer-encoding',"base64")
+        headers = Dict.delete(mail.headers,:'content-transfer-encoding')
+                 ++['content-transfer-encoding': "base64"]
         %{mail|headers: headers, body: {:raw,(body |> String.replace(~r/\s/,"") |> Base.encode64)}}
     end
   end
   def encode_body(%MimeMail{body: childs}=mail) when is_list(childs) do
     mail = MimeMail.CTParams.decode_headers(mail)
-    boundary = "qsjdkfjsdkf" #generate boundary
+    boundary = Base.encode16(:crypto.rand_bytes(20), case: :lower)
+    full_boundary = "--#{boundary}\r\n"
     {"multipart/"<>_=type,params} = mail.headers[:'content-type']
-    headers = mail.headers |> Dict.put(:'content-type',{type,Dict.put(params,:boundary,boundary)})
-    body = childs |> String.map(&MimeMail.to_string/1) |> Enum.join(boundary)
-    %{mail|body: {:raw,body}, headers: headers}
+    headers = Dict.delete(mail.headers,:'content-type')
+              ++['content-type': {type,Dict.put(params,:boundary,boundary)}]
+    body = childs |> Enum.map(&MimeMail.to_string/1) |> Enum.join("\r\n"<>full_boundary)
+    %{mail|body: {:raw,"#{full_boundary}#{body}\r\n#{full_boundary}"}, headers: headers}
   end
 
   def string_to_qp(str) do
