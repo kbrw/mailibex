@@ -30,24 +30,26 @@ defmodule MimeMail.Flat do
 
   def find_bodies(childs) when is_list(childs), do:
     List.flatten(for(child<-childs, do: find_bodies(child)))
-  def find_bodies(%MimeMail{headers: headers, body: body}), do:
+  def find_bodies(%MimeMail{headers: headers, body: body}) do
     find_bodies(headers[:'content-type'],headers[:'content-disposition'],headers[:'content-id'],body)
+  end
 
+  #def find_bodies(a,b,c,d), do: IO.puts(inspect {a,b,c,d})
   # handle multiparts
-  def find_bodies({"mutipart/mixed",_},_,_,childs) do
+  def find_bodies({"multipart/mixed",_},_,_,childs) do
     find_bodies(childs) |> Enum.map(fn
       {:inline,{_,_,_}=child}->{:attach_in,child}
       {_,{_,_,_}=child}->{:attach,child}
       txt_or_html->txt_or_html
     end)
   end
-  def find_bodies({"mutipart/related",_},_,_,childs) do
+  def find_bodies({"multipart/related",_},_,_,childs) do
     find_bodies(childs) |> Enum.map(fn
       {_,{_,_,_}=child}->{:include,child}
       other->other
     end)
   end
-  def find_bodies({"mutipart/alternative",_},_,_,childs) do
+  def find_bodies({"multipart/alternative",_},_,_,childs) do
     find_bodies(childs)
   end
   # default content type is content/plain : 
@@ -66,10 +68,10 @@ defmodule MimeMail.Flat do
   def find_bodies(ct,nil,id,body), do: 
     find_bodies(ct,{"attachment",%{}},id,body)
   def find_bodies({mime,ctparams}=ct,{_,cdparams}=cd,nil,body), do: 
-    find_bodies(ct,cd,"<#{ctparams[:name]||cdparams[:filename]||gen_id(MimeTypes.mime2ext(mime))}>",body)
-  def find_bodies({mime,_},{"inline",_},id,body), do:
+    find_bodies(ct,cd,{"<#{ctparams[:name]||cdparams[:filename]||gen_id(MimeTypes.mime2ext(mime))}>",%{}},body)
+  def find_bodies({mime,_},{"inline",_},{id,_},body), do:
     [inline: {(id |> String.rstrip(?>) |> String.lstrip(?<)),mime,body}]
-  def find_bodies({mime,_},{"attachment",_},id,body), do:
+  def find_bodies({mime,_},{"attachment",_},{id,_},body), do:
     [attach: {(id |> String.rstrip(?>) |> String.lstrip(?<)),mime,body}]
 
   def gen_id(ext), do:

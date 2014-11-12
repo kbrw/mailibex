@@ -62,7 +62,7 @@ defmodule MimeMail do
       _->
         headers = Dict.delete(mail.headers,:'content-transfer-encoding')
                  ++['content-transfer-encoding': "base64"]
-        %{mail|headers: headers, body: {:raw,(body |> String.replace(~r/\s/,"") |> Base.encode64)}}
+        %{mail|headers: headers, body: {:raw,(body |> Base.encode64 |> chunk64 |> Enum.join("\r\n"))}}
     end
   end
   def encode_body(%MimeMail{body: childs}=mail) when is_list(childs) do
@@ -75,6 +75,9 @@ defmodule MimeMail do
     body = childs |> Enum.map(&MimeMail.to_string/1) |> Enum.join("\r\n"<>full_boundary)
     %{mail|body: {:raw,"#{full_boundary}#{body}\r\n#{full_boundary}"}, headers: headers}
   end
+
+  defp chunk64(<<vline::size(75)-binary,rest::binary>>), do: [vline|chunk64(rest)]
+  defp chunk64(other), do: [other]
 
   def string_to_qp(str) do
     str |> String.split("\r\n") |> Enum.map(fn line->
