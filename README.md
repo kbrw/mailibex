@@ -26,13 +26,10 @@ Need more explanations here...
 ## Current Status
 
 - DKIM is fully implemented (signature/check), missing DKIM-Quoted-Printable token management
-- mimemail encoding/decoding of headers and body are fully implemented, missing tests
+- mimemail encoding/decoding of headers and body are fully implemented
+- flat mime body representation for easy mail creation / modification
 
 ## TODO :
-
-- flat mime body representation for easy body creation / modification
-
-## TODO later :
 
 - SPF check
 - DMARK check
