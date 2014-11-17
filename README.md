@@ -47,16 +47,32 @@ Organizational Domain implementation using public suffix database :
 "orga2.gouv.fr" = DMARK.organization "orga0.orga1.orga2.gouv.fr"
 ```
 
+## SPF ##
+
+Full implementation of the Sender Policy Framework (https://tools.ietf.org/html/rfc7208).
+
+```elixir
+case SPF.check_host(%{sender: "me@example.org", client_ip: {1,2,3,4}, helo: "relay.com", curr_domain: "me.com"}) do
+  :none      ->IO.puts("no SPF information")
+  :neutral   ->IO.puts("nor authorized neither not authorized")
+  :pass      ->IO.puts("the sender is authorized")
+  {:fail,msg}->IO.puts("the sender is not authorized because #{msg}")
+  :softfail  ->IO.puts("not authorized but don't be rude")
+  :temperror ->IO.puts("temporary error, try again latter")
+  :permerror ->IO.puts("spf error, ask to remote admin")
+end
+```
+
 ## Current Status
 
 - DKIM is fully implemented (signature/check), missing DKIM-Quoted-Printable token management
 - mimemail encoding/decoding of headers and body are fully implemented
 - flat mime body representation for easy mail creation / modification
 - DMARC implementation of organizational domains
+- SPF is fully implemented
 
 ## TODO :
 
-- SPF check
 - DMARC report
 - smtp client implementation
 - smtp server implementation over Ranch
