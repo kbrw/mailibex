@@ -91,7 +91,7 @@ defmodule MimeTypes do
   def bin2ext(<<0xEF,0xBB,0xBF,rest::binary>>), do: bin2ext(rest)
   def bin2ext(<<0xd0cf11e0a1b11ae1::size(64),_::binary>>), do: ".doc" #compound file is doc (do not handle .xls,.ppt)
   def bin2ext("BEGIN:VCARD\r\nVERSION:"<>_), do: ".vcf"
-  def bin2ext(<<"%PDF-",_v1,?.,_v2,"\n",_::binary>>), do: ".pdf"
+  def bin2ext(<<"%PDF-",_v1,?.,_v2,_::binary>>), do: ".pdf"
   def bin2ext("{\\rtf"<>_), do: ".rtf"
   def bin2ext("{"<>_), do: ".json"
   def bin2ext("["<>_), do: ".json"
