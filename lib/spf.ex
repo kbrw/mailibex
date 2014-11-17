@@ -15,9 +15,11 @@ defmodule SPF do
       case :inet_res.lookup('#{domain}', :in, :txt, edns: 0) do
         [] -> :temperror
         recs ->
-          case for(rec<-recs,"v=spf1 "<>rule=Enum.join(rec),do: rule) do
-            [rule] -> apply_rule(rule,params)
-            [] -> :none
+          rules=recs|>Enum.map(&Enum.join/1)|>Enum.filter(&match?("v=sp"<>_,&1))
+          case rules do
+            ["v=sp1 "<>rule] -> apply_rule(rule,params)
+            ["v=spf1 "<>rule] -> apply_rule(rule,params)
+            _ -> :none
           end
       end
     end
