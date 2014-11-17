@@ -64,7 +64,10 @@ defmodule SPF do
         {ret,_}->ret
       end
     catch
-      _, r -> :permerror
+      _, r -> 
+        IO.puts inspect r
+        IO.puts inspect(System.stacktrace, pretty: true)
+        :permerror
     end
   end
 
@@ -175,7 +178,7 @@ defmodule SPF do
   defp bin_ip({ip1,ip2,ip3,ip4}), do:
     <<ip1::size(8),ip2::size(8),ip3::size(8),ip4::size(8)>>
   defp bin_ip({ip1,ip2,ip3,ip4,ip5,ip6,ip7,ip8}), do:
-    <<ip1::size(4),ip2::size(16),ip3::size(16),ip4::size(16),ip5::size(16),ip6::size(16),ip7::size(16),ip8::size(16)>>
+    <<ip1::size(16),ip2::size(16),ip3::size(16),ip4::size(16),ip5::size(16),ip6::size(16),ip7::size(16),ip8::size(16)>>
   defp int_ip(addr) do
     ip = bin_ip(addr) ; bitlen = bit_size(ip)
     <<ip::size(bitlen)>> = ip
