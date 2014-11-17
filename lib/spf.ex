@@ -64,10 +64,7 @@ defmodule SPF do
         {ret,_}->ret
       end
     catch
-      _, r -> 
-        IO.puts inspect r
-        IO.puts inspect(System.stacktrace, pretty: true)
-        :permerror
+      _, r -> :permerror
     end
   end
 
