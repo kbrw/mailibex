@@ -34,8 +34,6 @@ defmodule MimeMail.Flat do
     find_bodies(headers[:'content-type'],headers[:'content-disposition'],headers[:'content-id'],body)
   end
 
-  #def find_bodies(a,b,c,d), do: IO.puts(inspect {a,b,c,d})
-  # handle multiparts
   def find_bodies({"multipart/mixed",_},_,_,childs) do
     find_bodies(childs) |> Enum.map(fn
       {:inline,{_,_,_}=child}->{:attach_in,child}

@@ -2,7 +2,7 @@ defmodule MimeTypes do
   :ssl.start ; :inets.start
   {ext2mime,mime2ext} = case :httpc.request('https://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types') do
     {:ok,{{_,200,_},_,r}} -> "#{r}"
-    _ -> File.read!("#{:code.priv_dir(:sa_order)}/mime.types")
+    _ -> File.read!("#{:code.priv_dir(:mailibex)}/mime.types")
   end 
   |> String.strip 
   |> String.split("\n")
@@ -165,7 +165,7 @@ defmodule EBML do
 
   ebml_spec = case :httpc.request('https://raw.githubusercontent.com/Matroska-Org/foundation-source/master/spectool/specdata.xml') do
     {:ok,{{_,200,_},_,r}} -> "#{r}"
-    _ -> File.read!("#{:code.priv_dir(:sa_order)}/ebml.xml")
+    _ -> File.read!("#{:code.priv_dir(:mailibex)}/ebml.xml")
   end 
   Regex.scan(~r/<element [^>]*name="([^"]*)"[^>]* id="0x([^"]*)"[^>]* type="([^"]*)"[^>]*>/,ebml_spec) #"
   |> Enum.each fn [_,key,hexkey,type]->

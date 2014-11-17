@@ -37,12 +37,11 @@ defmodule FlatMailTest do
     flat = flat 
     |> MimeMail.Flat.to_mail
     |> MimeMail.to_string
-    |> IO.puts
-    #|> MimeMail.from_string
-    #|> MimeMail.Flat.from_mail
-    #assert [{:txt, txt},{:html, html},{:include,{"imglogo","image/png",png}}|_headers] = flat
-    #assert ".txt" = MimeTypes.bin2ext(txt)
-    #assert ".html" = MimeTypes.bin2ext(html)
-    #assert ".png" = MimeTypes.bin2ext(png)
+    |> MimeMail.from_string
+    |> MimeMail.Flat.from_mail
+    assert [{:txt, txt},{:html, html},{:include,{"imglogo","image/png",png}}|_headers] = flat
+    assert ".txt" = MimeTypes.bin2ext(txt)
+    assert ".html" = MimeTypes.bin2ext(html)
+    assert ".png" = MimeTypes.bin2ext(png)
   end
 end
