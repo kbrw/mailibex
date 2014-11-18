@@ -163,84 +163,69 @@ defmodule SPFTest do
   test "mix spf policies" do
     # _spf1.example.com => v=spf1 +mx a:colo.example.com/28 -all
     assert :pass =  # not match mx rule, but match a/28 rule
-             SPF.check_host(%{sender: "toto@_spf1.example.com", client_ip: {127,0,2,3}, helo: "relay.com", curr_domain: "me.com"})
+             SPF.check("toto@_spf1.example.com",{127,0,2,3})
     assert {:fail,_} = # not match mx rule, neither "a/28" rule, so -all
-             SPF.check_host(%{sender: "toto@_spf1.example.com", client_ip: {127,0,1,10}, helo: "relay.com", curr_domain: "me.com"})
+             SPF.check("toto@_spf1.example.com",{127,0,1,10})
     assert :pass = # match first mx rule
-             SPF.check_host(%{sender: "toto@_spf1.example.com", client_ip: {127,0,1,4}, helo: "relay.com", curr_domain: "me.com"})
+             SPF.check("toto@_spf1.example.com",{127,0,1,4})
     # _spf2.example.com => v=spf1 -ptr +all
     assert :pass = # has no ptr, so match +all
-             SPF.check_host(%{sender: "toto@_spf2.example.com", client_ip: {128,0,0,1}, helo: "relay.com", curr_domain: "me.com"})
+             SPF.check("toto@_spf2.example.com",{128,0,0,1})
     assert :pass = # has ptr but not subdomain of _spf2.example.com, so match +all
-             SPF.check_host(%{sender: "toto@_spf2.example.com", client_ip: {127,0,0,1}, helo: "relay.com", curr_domain: "me.com"})
+             SPF.check("toto@_spf2.example.com",{127,0,0,1})
     assert {:fail,_} = # has ptr subdomain of _spf2.example.com
-             SPF.check_host(%{sender: "toto@_spf2.example.com", client_ip: {127,0,3,2}, helo: "relay.com", curr_domain: "me.com"})
+             SPF.check("toto@_spf2.example.com",{127,0,3,2})
     # _spf4.example.com => v=spf1 -mx redirect=_spf1.example.com
     assert {:fail,_} =  # match mx rule, so no redirection and fail
-             SPF.check_host(%{sender: "toto@_spf4.example.com", client_ip: {127,0,1,2}, helo: "relay.com", curr_domain: "me.com"})
+             SPF.check("toto@_spf4.example.com",{127,0,1,2})
     assert :pass =  # not match mx rule, but match a/28 rule of _spf1
-             SPF.check_host(%{sender: "toto@_spf4.example.com", client_ip: {127,0,2,3}, helo: "relay.com", curr_domain: "me.com"})
+             SPF.check("toto@_spf4.example.com",{127,0,2,3})
   end
   
   test "use a custom fail message : exp= or default" do
     # _spf10.example.com => v=spf1 mx -all exp=explain._spf.%{d}
     assert {:fail,"See http://_spf10.example.com/why.html?s=toto@_spf10.example.com&i=127.0.2.3"} = 
-             SPF.check_host(%{sender: "toto@_spf10.example.com", client_ip: {127,0,2,3}, helo: "relay.com", curr_domain: "me.com"})
+             SPF.check("toto@_spf10.example.com",{127,0,2,3})
     # _spf11 same as 10 but not txt record at explain._spf._spf11.example.com
     assert {:fail,"domain of "<>_} = 
-             SPF.check_host(%{sender: "toto@_spf11.example.com", client_ip: {127,0,2,3}, helo: "relay.com", curr_domain: "me.com"})
+             SPF.check("toto@_spf11.example.com",{127,0,2,3})
     # _spf111 same as 10 but a txt record is malformed at explain._spf._spf111.example.com
     assert {:fail,"domain of "<>_} = 
-             SPF.check_host(%{sender: "toto@_spf111.example.com", client_ip: {127,0,2,3}, helo: "relay.com", curr_domain: "me.com"})
+             SPF.check("toto@_spf111.example.com",{127,0,2,3})
   end
 
   test "rfc7208 appendix A" do
     assert :pass =
-             SPF.apply_rule("+all",%{client_ip: {200,200,200,200}, domain: "example.com", sender: "toto@example.com", helo: "relay.com", curr_domain: "me.com"})
-    SPF.lookup_limit_reset
+             SPF.check("toto@example.com",{200,200,200,200}, spf: "+all")
     assert :pass =
-             SPF.apply_rule("a -all",%{client_ip: {192,0,2,10}, domain: "example.com", sender: "toto@example.com", helo: "relay.com", curr_domain: "me.com"})
-    SPF.lookup_limit_reset
+             SPF.check("toto@example.com",{192,0,2,10}, spf: "a -all")
     assert :pass =
-             SPF.apply_rule("a -all",%{client_ip: {192,0,2,11}, domain: "example.com", sender: "toto@example.com", helo: "relay.com", curr_domain: "me.com"})
-    SPF.lookup_limit_reset
+             SPF.check("toto@example.com",{192,0,2,11}, spf: "a -all")
     assert {:fail,_} =
-             SPF.apply_rule("a:example.org -all",%{client_ip: {192,0,2,11}, domain: "example.com", sender: "toto@example.com", helo: "relay.com", curr_domain: "me.com"})
-    SPF.lookup_limit_reset
+             SPF.check("toto@example.com",{192,0,2,11}, spf: "a:example.org -all")
     assert :pass =
-             SPF.apply_rule("mx -all",%{client_ip: {192,0,2,129}, domain: "example.com", sender: "toto@example.com", helo: "relay.com", curr_domain: "me.com"})
-    SPF.lookup_limit_reset
+             SPF.check("toto@example.com",{192,0,2,129}, spf: "mx -all")
     assert :pass =
-             SPF.apply_rule("mx -all",%{client_ip: {192,0,2,130}, domain: "example.com", sender: "toto@example.com", helo: "relay.com", curr_domain: "me.com"})
-    SPF.lookup_limit_reset
+             SPF.check("toto@example.com",{192,0,2,130}, spf: "mx -all")
     assert :pass =
-             SPF.apply_rule("mx:example.org -all",%{client_ip: {192,0,2,140}, domain: "example.com", sender: "toto@example.com", helo: "relay.com", curr_domain: "me.com"})
-    SPF.lookup_limit_reset
+             SPF.check("toto@example.com",{192,0,2,140}, spf: "mx:example.org -all")
     assert :pass =
-             SPF.apply_rule("mx mx:example.org -all",%{client_ip: {192,0,2,130}, domain: "example.com", sender: "toto@example.com", helo: "relay.com", curr_domain: "me.com"})
-    SPF.lookup_limit_reset
+             SPF.check("toto@example.com",{192,0,2,130}, spf: "mx mx:example.org -all")
     assert :pass =
-             SPF.apply_rule("mx mx:example.org -all",%{client_ip: {192,0,2,140}, domain: "example.com", sender: "toto@example.com", helo: "relay.com", curr_domain: "me.com"})
-    SPF.lookup_limit_reset
+             SPF.check("toto@example.com",{192,0,2,140}, spf: "mx mx:example.org -all")
     assert :pass =
-             SPF.apply_rule("mx/30 mx:example.org/30 -all",%{client_ip: {192,0,2,131}, domain: "example.com", sender: "toto@example.com", helo: "relay.com", curr_domain: "me.com"})
-    SPF.lookup_limit_reset
+             SPF.check("toto@example.com",{192,0,2,131}, spf: "mx/30 mx:example.org/30 -all")
     assert {:fail,_} =
-             SPF.apply_rule("mx/30 mx:example.org/30 -all",%{client_ip: {192,0,2,132}, domain: "example.com", sender: "toto@example.com", helo: "relay.com", curr_domain: "me.com"})
-    SPF.lookup_limit_reset
+             SPF.check("toto@example.com",{192,0,2,132}, spf: "mx/30 mx:example.org/30 -all")
     assert :pass =
-             SPF.apply_rule("mx/30 mx:example.org/30 -all",%{client_ip: {192,0,2,143}, domain: "example.com", sender: "toto@example.com", helo: "relay.com", curr_domain: "me.com"})
-    SPF.lookup_limit_reset
+             SPF.check("toto@example.com",{192,0,2,143}, spf: "mx/30 mx:example.org/30 -all")
     assert :pass =
-             SPF.apply_rule("ptr -all",%{client_ip: {192,0,2,65}, domain: "example.com", sender: "toto@example.com", helo: "relay.com", curr_domain: "me.com"})
-    SPF.lookup_limit_reset
+             SPF.check("toto@example.com",{192,0,2,65}, spf: "ptr -all")
     assert {:fail,_} =
-             SPF.apply_rule("ptr -all",%{client_ip: {192,0,2,140}, domain: "example.com", sender: "toto@example.com", helo: "relay.com", curr_domain: "me.com"})
-    SPF.lookup_limit_reset
+             SPF.check("toto@example.com",{192,0,2,140}, spf: "ptr -all")
     assert {:fail,_} =
-             SPF.apply_rule("ptr -all",%{client_ip: {10,0,0,4}, domain: "example.com", sender: "toto@example.com", helo: "relay.com", curr_domain: "me.com"})
-    SPF.lookup_limit_reset
+             SPF.check("toto@example.com",{10,0,0,4}, spf: "ptr -all")
     assert {:fail,_} =
-             SPF.apply_rule("ip4:192.0.2.128/28 -all",%{client_ip: {192,0,2,65}, domain: "example.com", sender: "toto@example.com", helo: "relay.com", curr_domain: "me.com"})
+             SPF.check("toto@example.com",{192,0,2,65}, spf: "ip4:192.0.2.128/28 -all")
   end
 end

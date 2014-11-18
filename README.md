@@ -52,7 +52,7 @@ Organizational Domain implementation using public suffix database :
 Full implementation of the Sender Policy Framework (https://tools.ietf.org/html/rfc7208).
 
 ```elixir
-case SPF.check_host(%{sender: "me@example.org", client_ip: {1,2,3,4}, helo: "relay.com", curr_domain: "me.com"}) do
+case SPF.check("me@example.org",{1,2,3,4}, helo: "relay.com", server_domain: "me.com") do
   :none      ->IO.puts("no SPF information")
   :neutral   ->IO.puts("nor authorized neither not authorized")
   :pass      ->IO.puts("the sender is authorized")

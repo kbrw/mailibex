@@ -1,18 +1,39 @@
 defmodule SPF do
   
   @doc """
-  check_host param = %{sender: "me@example.org", client_ip: {1,2,3,4}, helo: "relay.com", curr_domain: "me.com"}
+    params:
+    - sender: sender mail to check
+    - ip: check authorization for this ip, ip in erlang format so
+      ipv4:{1,1,1,1}, ipv6:{1,1,1,1,1,1,1,1}
+    - param_list: optional kw parameters :helo and :server_domain, if :spf is
+      given, then the :spf value is used for SPF instead of the sender domain TXT dns record
+
+    > SPF.check("me@gmail.com",{217,0,3,4}, server_domain: "mta.example.com", helo: "yahoo.fr")
   """
-  def check_host(%{sender: sender}=params) do
+  def check(sender,ip,param_list \\ []) do
+    domain = sender|>String.split("@")|>Enum.at(1)
+    server_domain = param_list[:server_domain] || guess_fqdn
+    helo = param_list[:helo] || "unknown"
+    checkhost_params = %{sender: sender,client_ip: ip, server_domain: server_domain, helo: helo, domain: domain}
     lookup_limit_reset
-    check_host(params,sender|>String.split("@")|>Enum.at(1))
+    if param_list[:spf] do
+      apply_rule(param_list[:spf],checkhost_params)
+    else
+      check_host(checkhost_params)
+    end
   end
 
-  # none, :neutral,:pass,:fail,:softfail,:temperror,:permerror
-  defp check_host(params,domain) do
-    params = Dict.put(params,:domain,domain)
+  def guess_fqdn do
+    {:ok,host} = :inet.gethostname
+    {:ok,{:hostent,fqdn,_,_,_,_}} = :inet.gethostbyname(host)
+    "#{fqdn}" 
+  end
+
+  # check_host param = %{sender: "me@example.org", client_ip: {1,2,3,4}, helo: "relay.com", server_domain: "me.com", domain: "example.org"}
+  # check_host returns : none, :neutral,:pass,{:fail,msg},:softfail,:temperror,:permerror
+  defp check_host(params) do
     if lookup_limit_exceeded do :permerror else
-      case :inet_res.lookup('#{domain}', :in, :txt, edns: 0) do
+      case :inet_res.lookup('#{params.domain}', :in, :txt, edns: 0) do
         [] -> :temperror
         recs ->
           rules=recs|>Enum.map(&Enum.join/1)|>Enum.filter(&match?("v=sp"<>_,&1))
@@ -45,7 +66,7 @@ defmodule SPF do
       end
       result = Enum.find_value(matches,&(&1.()))
       result = result || if modifiers[:redirect] do
-        case check_host(params,modifiers[:redirect]) do
+        case check_host(%{params|domain: modifiers[:redirect]}) do
           :none->:permerror
           other->other
         end
@@ -79,7 +100,7 @@ defmodule SPF do
 
   def term_match("all",_), do: :match
   def term_match("include:"<>domain_spec,params) do
-    case check_host(params,target_name(domain_spec,params)) do
+    case check_host(%{params|domain: target_name(domain_spec,params)}) do
       :pass -> :match
       {:fail,_} -> :notmatch
       res when res in [:softfail,:neutral] -> :notmatch
@@ -251,7 +272,7 @@ defmodule SPF do
   def target_name_macro("v",%{client_ip: ip}) when tuple_size(ip) == 8, do: "ip6"
   def target_name_macro("h",%{helo: helo}), do: helo
   def target_name_macro("c",%{client_ip: ip}), do: "#{:inet.ntoa ip}"
-  def target_name_macro("r",%{curr_domain: curr_domain}), do: curr_domain
+  def target_name_macro("r",%{server_domain: server_domain}), do: server_domain
   def target_name_macro("t",_) do
     {megasec,sec,_}=:os.timestamp
     "#{megasec*1_000_000+sec}"
