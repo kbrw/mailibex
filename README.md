@@ -31,9 +31,15 @@ Need more explanations here...
 
 ```elixir
 [rsaentry] =  :public_key.pem_decode(File.read!("test/mails/key.pem"))
-mail
-|> MimeMail.from_string
-|> DKIM.sign(:public_key.pem_entry_decode(rsaentry), d: "order.brendy.fr", s: "cobrason")
+mail = MimeMail.from_string(data)
+
+mail = DKIM.sign(mail,:public_key.pem_entry_decode(rsaentry), d: "order.brendy.fr", s: "cobrason")
+case DKIM.check(mail) do
+  :none      ->IO.puts("no dkim signature")
+  :pass      ->IO.puts("the mail is signed by #{mail[:'dkim-signature'].s} at #{mail[:'dkim-signature'].d}")
+  :tempfail  -> IO.puts("the dns record is unavailable, try later")
+  {:permfail,msg}->IO.puts("the sender is not authorized because #{msg}")
+end
 ```
 
 Need more explanations here...

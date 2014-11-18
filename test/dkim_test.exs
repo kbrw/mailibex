@@ -24,29 +24,29 @@ defmodule DKIMTest do
   end
 
   test "amazon DKIM check" do
-    assert {:ok,_} = check("test/mails/amazon.eml")
+    assert :pass = check("test/mails/amazon.eml")
   end
 
   test "DKIM relaxed/relaxed check" do # test cases from mail sended by gmail
-    assert {:ok,_} = check("test/mails/valid_dkim_relaxed_canon.eml")
-    assert {:ok,_} = check("test/mails/valid_dkim_relaxed_uncanon.eml")
-    assert {:error,:body_hash_no_match} = check("test/mails/invalid_dkim_bodyh.eml")
-    assert {:error,{:unavailable_pubkey,_}} = check("test/mails/invalid_dkim_dns.eml")
-    assert {:error,:sig_not_match} = check("test/mails/invalid_dkim_sig.eml")
+    assert :pass = check("test/mails/valid_dkim_relaxed_canon.eml")
+    assert :pass = check("test/mails/valid_dkim_relaxed_uncanon.eml")
+    assert {:permfail,:body_hash_no_match} = check("test/mails/invalid_dkim_bodyh.eml")
+    assert :tempfail = check("test/mails/invalid_dkim_dns.eml")
+    assert {:permfail,:sig_not_match} = check("test/mails/invalid_dkim_sig.eml")
   end
   test "DKIM relaxed/simple check" do # test cases from mail sended by gen_smtp_client
-    assert {:ok,_} = check("test/mails/valid_dkim_relaxedsimple_canon.eml")
-    assert {:ok,_} = check("test/mails/valid_dkim_relaxedsimple_uncanon.eml")
-    assert {:error,:body_hash_no_match} = check("test/mails/invalid_dkim_relaxedsimple_uncanon.eml")
+    assert :pass = check("test/mails/valid_dkim_relaxedsimple_canon.eml")
+    assert :pass = check("test/mails/valid_dkim_relaxedsimple_uncanon.eml")
+    assert {:permfail,:body_hash_no_match} = check("test/mails/invalid_dkim_relaxedsimple_uncanon.eml")
   end
   test "DKIM simple/simple check" do # test cases from mail sended by gen_smtp_client
-    assert {:ok,_} = check("test/mails/valid_dkim_simple_canon.eml")
-    assert {:error,:sig_not_match} = check("test/mails/invalid_dkim_simple_uncanon.eml")
+    assert :pass = check("test/mails/valid_dkim_simple_canon.eml")
+    assert {:permfail,:sig_not_match} = check("test/mails/invalid_dkim_simple_uncanon.eml")
   end
 
   test "DKIM signature round trip" do
     [rsaentry] =  :public_key.pem_decode(File.read!("test/mails/key.pem"))
-    assert {:ok,_} = 
+    assert :pass = 
       File.read!("test/mails/valid_dkim_relaxed_canon.eml")
       |> MimeMail.from_string
       |> DKIM.sign(:public_key.pem_entry_decode(rsaentry), d: "order.brendy.fr", s: "cobrason")

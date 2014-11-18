@@ -3,22 +3,26 @@ defmodule DKIM do
             d: "example.org", s: "default", a: %{sig: :rsa, hash: :sha256}, b: "", bh: "", l: nil
 
   def check(%MimeMail{headers: headers,body: {:raw,body}}=mail) do
-    sig = decode_headers(mail).headers[:'dkim-signature']
-    if (sig.bh == body_hash(body,sig)) do
-      case :inet_res.lookup('#{sig.s}._domainkey.#{sig.d}', :in, :txt, edns: 0) do
-        [rec|_] ->
-          pubkey = MimeMail.Params.parse_header(IO.chardata_to_string(rec))
-          if :"#{pubkey[:k]||"rsa"}" == sig.a.sig do
-            case extract_key64(pubkey[:p]||"") do
-              {:ok,key}->
-                header_h = headers_hash(headers,sig)
-                if :crypto.verify(:rsa,:sha256,header_h,sig.b,key) do
-                  {:ok,{sig.s,sig.d}}
-                else {:error,:sig_not_match} end
-              :error-> {:error,:invalid_pub_key} end
-          else {:error,:sig_algo_not_match} end
-        _ -> {:error,{:unavailable_pubkey,"#{sig.s}._domainkey.#{sig.d}"}} end
-    else {:error,:body_hash_no_match} end
+    mail = decode_headers(mail) 
+    case mail.headers[:'dkim-signature'] do
+      nil -> :none
+      sig ->
+        if (sig.bh == body_hash(body,sig)) do
+          case :inet_res.lookup('#{sig.s}._domainkey.#{sig.d}', :in, :txt, edns: 0) do
+            [rec|_] ->
+              pubkey = MimeMail.Params.parse_header(IO.chardata_to_string(rec))
+              if :"#{pubkey[:k]||"rsa"}" == sig.a.sig do
+                case extract_key64(pubkey[:p]||"") do
+                  {:ok,key}->
+                    header_h = headers_hash(headers,sig)
+                    if :crypto.verify(:rsa,:sha256,header_h,sig.b,key) do
+                      :pass
+                    else {:permfail,:sig_not_match} end
+                  :error-> {:permfail,:invalid_pub_key} end
+              else {:permfail,:sig_algo_not_match} end
+            _ -> :tempfail end
+        else {:permfail,:body_hash_no_match} end
+    end
   end
 
   def sign(mail,key,sig_params \\ [], keep \\ true) do
