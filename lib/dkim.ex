@@ -1,7 +1,10 @@
 defmodule DKIM do
   defstruct h: [:to,:from,:date,:subject,:"message-id",:"mime-version"], c: %{header: :relaxed, body: :simple},
-            d: "example.org", s: "default", a: %{sig: :rsa, hash: :sha256}, b: "", bh: "", l: nil
+            d: "example.org", s: "default", a: %{sig: :rsa, hash: :sha256}, b: "", bh: "", l: nil, v: "1",
+            x: nil, i: nil, q: "dns/txt", t: nil, z: nil
 
+  def check(mail) when is_binary(mail), do:
+    check(MimeMail.from_string(mail))
   def check(%MimeMail{headers: headers,body: {:raw,body}}=mail) do
     mail = decode_headers(mail) 
     case mail.headers[:'dkim-signature'] do
@@ -16,7 +19,7 @@ defmodule DKIM do
                   {:ok,key}->
                     header_h = headers_hash(headers,sig)
                     if :crypto.verify(:rsa,:sha256,header_h,sig.b,key) do
-                      :pass
+                      {:pass,{sig.s,sig.d}}
                     else {:permfail,:sig_not_match} end
                   :error-> {:permfail,:invalid_pub_key} end
               else {:permfail,:sig_algo_not_match} end
