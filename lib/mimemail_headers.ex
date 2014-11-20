@@ -17,7 +17,7 @@ end
 
 defmodule MimeMail.Emails do
   def parse_header(data) do
-    data |> String.split(~r/\s*,\s*/) |> Enum.map(&MimeMail.Address.decode/1)
+    data |> String.strip |> String.split(~r/\s*,\s*/) |> Enum.map(&MimeMail.Address.decode/1)
   end
   def decode_headers(%MimeMail{headers: headers}=mail) do
     parsed=for {k,{:raw,v}}<-headers, k in [:from,:to,:cc,:cci,:'delivered-to'] do
