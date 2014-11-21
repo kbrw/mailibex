@@ -68,12 +68,12 @@ defmodule MimeMail do
   def encode_body(%MimeMail{body: childs}=mail) when is_list(childs) do
     mail = MimeMail.CTParams.decode_headers(mail)
     boundary = Base.encode16(:crypto.rand_bytes(20), case: :lower)
-    full_boundary = "--#{boundary}\r\n"
+    full_boundary = "--#{boundary}"
     {"multipart/"<>_=type,params} = mail.headers[:'content-type']
     headers = Dict.delete(mail.headers,:'content-type')
               ++['content-type': {type,Dict.put(params,:boundary,boundary)}]
-    body = childs |> Enum.map(&MimeMail.to_string/1) |> Enum.join("\r\n"<>full_boundary)
-    %{mail|body: {:raw,"#{full_boundary}#{body}\r\n#{full_boundary}"}, headers: headers}
+    body = childs |> Enum.map(&MimeMail.to_string/1) |> Enum.join("\r\n\r\n"<>full_boundary<>"\r\n")
+    %{mail|body: {:raw,"#{full_boundary}\r\n#{body}\r\n\r\n#{full_boundary}--\r\n"}, headers: headers}
   end
 
   defp chunk64(<<vline::size(75)-binary,rest::binary>>), do: [vline|chunk64(rest)]

@@ -28,14 +28,13 @@ defmodule DKIM do
     end
   end
 
-  def sign(mail,key,sig_params \\ [], keep \\ true) do
+  def sign(mail,key,sig_params \\ []) do
     sig = struct(DKIM,sig_params)
     %{body: {:raw,body}}=encoded_mail=MimeMail.encode_body(mail) #ensure body is binary
     sig = %{sig| bh: body_hash(body,sig)} #add body hash
     encoded_mail = MimeMail.encode_headers(%{encoded_mail|headers: Dict.put(encoded_mail.headers,:'dkim-signature',sig)}) #encoded mail without dkim.b
     sig = %{sig| b: encoded_mail.headers |> headers_hash(sig) |> :public_key.sign(:sha256,key)}
-    mail_to_return = if keep, do: mail, else: encoded_mail #return encoded mail by default to save computations
-    %{mail_to_return|headers: Dict.put(encoded_mail.headers,:'dkim-signature',sig)}
+    %{encoded_mail|headers: Dict.put(encoded_mail.headers,:'dkim-signature',sig)}
   end
 
   def decode_headers(%MimeMail{headers: headers}=mail) do

@@ -85,7 +85,7 @@ defmodule MimeMail.Flat do
         %MimeMail{
           headers: ['content-type': {contenttype,%{name: id}},
                     'content-disposition': {"inline",%{filename: id}},
-                    'content-id': {"<#{id}>",%{}}],
+                    'content-id': "<#{id}>"],
           body: binary
         }
       end]
