@@ -1,7 +1,7 @@
 defmodule MimeMail.Address do
   defstruct name: nil, address: ""
 
-  def decode_headers(addr_spec) do
+  def decode(addr_spec) do
     case Regex.run(~r/^([^<]*)<([^>]*)>/,addr_spec) do
       [_,desc,addr]->%MimeMail.Address{name: MimeMail.Words.word_decode(desc), address: addr}
       _ -> %MimeMail.Address{name: nil, address: String.strip(addr_spec)}
