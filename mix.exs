@@ -19,11 +19,30 @@ defmodule Mailibex.Mixfile do
     [app: :mailibex,
      version: "0.0.1",
      elixir: "~> 1.0.0",
+     description: description,
+     package: package,
      compilers: [:iconv, :elixir, :app],
      deps: []]
   end
 
   def application do
     [applications: [:logger]]
+  end
+
+  defp package do
+    [ contributors: ["Arnaud Wetzel"],
+      licenses: ["The MIT License (MIT)"],
+      links: [ { "GitHub", "https://github.com/awetzel/mailibex" } ] ]
+  end
+
+  defp description do
+    """
+    Mailibex is an email library in Elixir : currently implements
+    DKIM, SPF, DMARC, MimeMail (using iconv nif for encoding),
+    MimeType (and file type detection), a simplified api to modify or create
+    mimemail as a keyword list. Next step is a full implementation of
+    SMTP client and server, to make it possible to use emails as a routable API for
+    events and messages between your applications.
+    """
   end
 end
