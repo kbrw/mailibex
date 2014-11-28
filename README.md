@@ -12,6 +12,21 @@ Need more explanations about pluggable header Codec...
 
 `MimeMail.to_string` encode headers and body into the final ascii mail.
 
+## MimeTypes ##
+
+`ext2mime` and `mime2ext` are functions generated at compilation time from the apache mime configuration file https://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types .
+
+```elixir
+"image/png" = MimeTypes.ext2mime(".png")
+".png" = MimeTypes.mime2ext("image/png")
+```
+
+`bin2ext` matches the begining of the binary and sometimes decode the binary in order to determine the file extension (then we can use `ext2mime`to find the mime type if needed.
+
+```elixir
+".webm" = MimeTypes.bin2ext(File.read!("path/to/my/webm/file.webm"))
+```
+
 ## FlatMail ##
 
 Flat mail representation of MimeMail is simply a `KeywordList` where
