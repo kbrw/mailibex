@@ -5,12 +5,21 @@ Library containing Email related implementations in Elixir : dkim, spf, dmark, m
 
 ## MimeMail ##
 
-Use `MimeMail.from_string` to split email headers and body, this function keep
-the raw representation of headers and body in a `{:raw,value}` term.
+```elixir
+%MimeMail{headers: [{key::atom, {:raw,binary} | MimeMail.Header.t}], body: binary | [MimeMail.t] | {:raw,binary}}
+# headers contains a keywordlist of either the raw form of the header, 
+# or an encodable version of the header (a term with a module implementing MimeMail.Header.to_ascii)
+# body contains either the raw binary body, the decoded body as a binary (using content-transfer-encoding), 
+# or a list of MimeMail struct to encode in case of a multipart
+# If body is a text, then the decoded body binary will be the UTF8 version of the text converted from the source charset
+```
 
-Need more explanations about pluggable header Codec...
-
-`MimeMail.to_string` encode headers and body into the final ascii mail.
+- `MimeMail.from_string` parse the mimemail binary into a `MimeMail` struct explained above, with all the headers and body in their encoded form ('{:raw,binary}`)
+- `MimeMail.encode_headers(mail)` apply the `MimeMail.Header.to_ascii` to every header to convert them into a `{:raw,binary}` form.
+- `MimeMail.decode_headers(mail,[Mod1,Mod2])` applies successively `Mod1.decode_headers(mail)` the `Mod2.decode_headers(mail)` to the result.
+- `MimeMail.encode_body(mail)` encodes the mail body from a decoded form (`binary | [MimeMail]`) into a `{:raw,binary}`form
+- `MimeMail.decode_body(mail)` does the opposite.
+- `MimeMail.to_string` encode headers and body into the final ascii mail.
 
 ## MimeTypes ##
 
