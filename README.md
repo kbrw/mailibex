@@ -19,21 +19,24 @@ Library containing Email related implementations in Elixir : dkim, spf, dmark, m
 - `MimeMail.decode_headers(mail,[Mod1,Mod2])` applies successively `Mod1.decode_headers(mail)` the `Mod2.decode_headers(mail)` to the result.
 - `MimeMail.encode_body(mail)` encodes the mail body from a decoded form (`binary | [MimeMail]`) into a `{:raw,binary}`form
 - `MimeMail.decode_body(mail)` does the opposite.
-- `MimeMail.to_string` encode headers and body into the final ascii mail.
+- `MimeMail.to_string(mail)` encode headers and body of a `MimeMail` into an ascii mail binary.
 
-## MimeTypes ##
+Currently, the library contains three types of acceptable header value (implementing `MimeMail.Header`) :
+- `binary` : simple binary headers are utf8 strings converted into encoded words
+- `{value,%{}=params}` are only acceptable tuple as header, converted into a 'content-*' style header ( `value; param1=value1, param2=value2`)
+- `[%MimeMail.Address{name="toto", address: "toto@example.org"}]` : lists are encoded into mailbox list header
+- `%DKIM{}` : Converted into a dkim header
 
-`ext2mime` and `mime2ext` are functions generated at compilation time from the apache mime configuration file https://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types .
-
+So for instance : 
 ```elixir
-"image/png" = MimeTypes.ext2mime(".png")
-".png" = MimeTypes.mime2ext("image/png")
-```
-
-`bin2ext` matches the begining of the binary and sometimes decode the binary in order to determine the file extension (then we can use `ext2mime`to find the mime type if needed.
-
-```elixir
-".webm" = MimeTypes.bin2ext(File.read!("path/to/my/webm/file.webm"))
+%MimeMail{headers: [
+    to: [%MimeMail.Address{name="You",address: "you@m.org"}],
+    from: [%MimeMail.Address{name="Me",address: "me@m.org"}],
+    cc: "me@m.org", # only ascii so ok to encode it as a simple encoded word
+    'content-type': {'text/plain',%{charset: "utf8"}},
+  ],
+  body: "Hello world"}
+|> MimeMail.to_string
 ```
 
 ## FlatMail ##
@@ -50,6 +53,21 @@ MimeMail.Flat.to_mail(from: "me@example.org", txt: "Hello world", attach: "attac
 ```
 
 Need more explanations here...
+
+## MimeTypes ##
+
+`ext2mime` and `mime2ext` are functions generated at compilation time from the apache mime configuration file https://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types .
+
+```elixir
+"image/png" = MimeTypes.ext2mime(".png")
+".png" = MimeTypes.mime2ext("image/png")
+```
+
+`bin2ext` matches the begining of the binary and sometimes decode the binary in order to determine the file extension (then we can use `ext2mime`to find the mime type if needed.
+
+```elixir
+".webm" = MimeTypes.bin2ext(File.read!("path/to/my/webm/file.webm"))
+```
 
 ## DKIM ##
 
