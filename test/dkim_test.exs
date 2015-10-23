@@ -46,7 +46,7 @@ defmodule DKIMTest do
 
   test "DKIM signature round trip" do
     [rsaentry] =  :public_key.pem_decode(File.read!("test/mails/key.pem"))
-    assert {:pass,_} = 
+    assert {:pass,_} =
       File.read!("test/mails/valid_dkim_relaxed_canon.eml")
       |> MimeMail.from_string
       |> DKIM.sign(:public_key.pem_entry_decode(rsaentry), d: "order.brendy.fr", s: "cobrason")

@@ -12,7 +12,7 @@ defmodule MimeMailTest do
   test "qp encoding => no line > 76 char && only ascii && no space at end of lines" do
     res = MimeMail.string_to_qp(@qp_test)
     Enum.each String.split(res,"\r\n"), fn line->
-      assert false = Regex.match? ~r/[\t ]+$/, line
+      assert false == Regex.match? ~r/[\t ]+$/, line
       assert String.length(line) < 77
       assert [] = Enum.filter('#{line}',&(&1 < 32 or &1 > 127))
     end
@@ -85,9 +85,9 @@ defmodule MimeMailTest do
     |> MimeMail.from_string
     |> MimeMail.decode_headers([DKIM,MimeMail.Emails,MimeMail.Words,MimeMail.CTParams])
     |> MimeMail.decode_body
-    roundtrip = decoded 
-    |> MimeMail.to_string 
-    |> MimeMail.from_string 
+    roundtrip = decoded
+    |> MimeMail.to_string
+    |> MimeMail.from_string
     |> MimeMail.decode_body
     assert String.rstrip(decoded.body) == String.rstrip(roundtrip.body)
   end

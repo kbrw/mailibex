@@ -6,8 +6,8 @@ defmodule DKIM do
   def check(mail) when is_binary(mail), do:
     check(MimeMail.from_string(mail))
   def check(%MimeMail{headers: headers,body: {:raw,body}}=mail) do
-    mail = decode_headers(mail) 
-    case mail.headers[:'dkim-signature'] do
+    mail = decode_headers(mail)
+    case Dict.get(mail.headers, :"dkim-signature") do
       nil -> :none
       sig ->
         if (sig.bh == body_hash(body,sig)) do
@@ -38,11 +38,11 @@ defmodule DKIM do
   end
 
   def decode_headers(%MimeMail{headers: headers}=mail) do
-    case headers[:'dkim-signature'] do
+    case Dict.get(headers, :"dkim-signature") do
       {:raw,raw} ->
         unquoted = MimeMail.header_value(raw)
         sig = struct(DKIM,for({k,v}<-MimeMail.Params.parse_header(unquoted),do: {k,decode_field(k,v)}))
-        put_in(mail,[:headers,:'dkim-signature'],sig)
+        %MimeMail{mail | headers: put_in(mail.headers, [:"dkim-signature"], sig)}
       _ -> mail
     end
   end
@@ -78,7 +78,7 @@ defmodule DKIM do
       :error-> ""
     end
   end
-  defp decode_field(:h,h), do: 
+  defp decode_field(:h,h), do:
     (h|>String.downcase|>String.split(":")|>Enum.map(&String.to_atom/1))
   defp decode_field(_,e), do: e
 
@@ -91,7 +91,7 @@ defmodule DKIM do
   def canon_body(body,:simple), do:
     String.replace(body,~r/(\r\n)*$/,"\r\n", global: false)
   def canon_body(body,:relaxed) do
-    body 
+    body
     |> String.replace(~r/[\t ]+\r\n/, "\r\n")
     |> String.replace(~r/[\t ]+/, " ")
     |> String.replace(~r/(\r\n)*$/,"\r\n", global: false)
@@ -102,7 +102,7 @@ defmodule DKIM do
     <<trunc_body::binary-size(l),_::binary>> = body
     trunc_body
   end
-  
+
   def hash(bin,:sha256), do: :crypto.hash(:sha256,bin)
   def hash(bin,:sha1), do: :crypto.hash(:sha,bin)
 
