@@ -30,9 +30,9 @@ defmodule Mailibex.Mixfile do
   end
 
   defp package do
-    [ contributors: ["Arnaud Wetzel"],
+    [ maintainers: ["Arnaud Wetzel"],
       licenses: ["The MIT License (MIT)"],
-      links: [ { "GitHub", "https://github.com/awetzel/mailibex" } ] ]
+      links: %{ "GitHub"=>"https://github.com/awetzel/mailibex" } ]
   end
 
   defp description do
