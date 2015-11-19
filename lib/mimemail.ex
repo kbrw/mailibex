@@ -2,8 +2,11 @@ defmodule MimeMail do
   @type header :: {:raw,binary} | MimeMail.Header.t #ever the raw line or any term implementing MimeMail.Header.to_ascii
   @type body :: binary | [MimeMail.t] | {:raw,binary} #ever the raw body or list of mail for multipart or binary for decoded content
   @type t :: %MimeMail{headers: [{key::binary,header}], body: body}
-  @derive [Access]
   defstruct headers: [], body: ""
+
+  @behaviour Access
+  defdelegate get_and_update(dict,k,v), to: Map
+  defdelegate fetch(dict,k), to: Map
 
   def from_string(data) do
     [headers,body]= String.split(data,"\r\n\r\n",parts: 2)
