@@ -32,8 +32,8 @@ defmodule DMARCTest do
   test "TLD with only 1 (wildcard) rule." do
     assert  "cy" = DMARC.organization "cy"
     assert  "c.cy" = DMARC.organization "c.cy"
-    assert  "b.c.cy" = DMARC.organization "b.c.cy"
-    assert  "b.c.cy" = DMARC.organization "a.b.c.cy"
+    assert  "c.cy" = DMARC.organization "b.c.cy"
+    assert  "c.cy" = DMARC.organization "a.b.c.cy"
   end
 
   test "More complex TLD." do

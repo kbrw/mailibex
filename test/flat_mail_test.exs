@@ -8,7 +8,7 @@ defmodule FlatMailTest do
     assert {"text/plain",%{}} = text.headers[:'content-type']
     assert {"text/plain",%{name: ct_txt_name}} = text_attached.headers[:'content-type']
     assert {"application/x-7z-compressed",%{name: ct_7z_name}} = archive.headers[:'content-type']
-    assert nil = text.headers[:'content-disposition']
+    assert nil == text.headers[:'content-disposition']
     assert {"attachment",%{filename: cd_txt_name}} = text_attached.headers[:'content-disposition']
     assert {"attachment",%{filename: cd_7z_name}} = archive.headers[:'content-disposition']
     assert String.contains?(ct_txt_name,".txt")

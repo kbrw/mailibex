@@ -12,7 +12,7 @@ defmodule MimeMailTest do
   test "qp encoding => no line > 76 char && only ascii && no space at end of lines" do
     res = MimeMail.string_to_qp(@qp_test)
     Enum.each String.split(res,"\r\n"), fn line->
-      assert false = Regex.match? ~r/[\t ]+$/, line
+      assert !Regex.match? ~r/\s+$/, line
       assert String.length(line) < 77
       assert [] = Enum.filter('#{line}',&(&1 < 32 or &1 > 127))
     end
