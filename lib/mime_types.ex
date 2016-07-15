@@ -168,8 +168,8 @@ defmodule EBML do
     _ -> File.read!("#{:code.priv_dir(:mailibex)}/ebml.xml")
   end 
   Regex.scan(~r/<element [^>]*name="([^"]*)"[^>]* id="0x([^"]*)"[^>]* type="([^"]*)"[^>]*>/,ebml_spec) #"
-  |> Enum.each fn [_,key,hexkey,type]->
+  |> Enum.each (fn [_,key,hexkey,type]->
     def key_of(unquote(hexkey)), do: {unquote(key),unquote(:"#{type}")}
-  end
+  end)
 end
 
