@@ -21,7 +21,7 @@ defmodule DMARC do
       "!"<>rest->rest  # remove exception mark ! 
       "*"->quote do: _ # "*" component matches anything, so convert it to "_"
       x -> x           # match other components as they are
-    end) ++ quote do: [_org|_rest]  # ["com","*","pref"] -> must match ["com",_,"pref",_org|_rest]
+    end)) ++ quote do: [_org|_rest]  # ["com","*","pref"] -> must match ["com",_,"pref",_org|_rest]
     org_len = length(spec) + 1      # and 3+1=4 first components is organization
     def organization(unquote(org_match)=host), do:
       (host |> Enum.take(unquote(org_len)) |> Enum.reverse |> Enum.join("."))
