@@ -159,7 +159,33 @@ end
 
 defmodule Iconv do
   @on_load :init
-  def init, do: :erlang.load_nif('#{:code.priv_dir(:mailibex)}/Elixir.Iconv_nif',0)
-  @doc "iconv interface, from and to are encoding supported by iconv"
-  def conv(_str,_from,_to), do: exit(:nif_library_not_loaded)
+  def init do
+    ret = :erlang.load_nif('#{:code.priv_dir(:mailibex)}/Elixir.Iconv_nif',0)
+    case ret do
+      {:error, {:load_failed, _} }->
+        if Code.ensure_loaded?(Codepagex), do: :ok, else: {:error, "Codepagex is not available. Cannot fallback."}
+      other ->
+        other
+    end
+  end
+
+  @doc """
+  iconv interface, from and to are encoding supported by iconv
+
+  Fallback to Codepagex when iconv is unavailable
+  """
+  @spec conv(binary, binary, binary) :: binary | {:error, term} | {:error, binary, term} | {:incomplete, binary, binary}
+  def conv(str, from, _to = "utf8") do
+    from = from |> String.replace(~r|[-/]|, "_") |> String.downcase
+    case from do
+      "utf_8" -> str
+      "utf_" <> _bit -> :unicode.characters_to_binary(str)
+      "us_ascii" -> Codepagex.to_string!(str, :ascii)
+      other_from ->
+        with {:ok, utf8_binary} <- Codepagex.to_string(str, other_from, Codepagex.use_utf_replacement) do
+          utf8_binary
+        end
+    end
+  end
+  def conv(_str, _from, _to), do: exit(:nif_library_not_loaded)
 end
