@@ -182,8 +182,9 @@ defmodule Iconv do
       "utf_" <> _bit -> :unicode.characters_to_binary(str)
       "us_ascii" -> Codepagex.to_string!(str, :ascii)
       other_from ->
-        with {:ok, utf8_binary} <- Codepagex.to_string(str, other_from, Codepagex.use_utf_replacement) do
-          utf8_binary
+        case Codepagex.to_string(str, other_from, Codepagex.use_utf_replacement) do
+          {:ok, utf8_binary} -> utf8_binary
+          other_ret -> other_ret
         end
     end
   end
