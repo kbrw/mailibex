@@ -9,10 +9,10 @@ defmodule Mix.Tasks.Compile.Iconv do
 
   For Windows:
   1. Install (MSYS2)[https://msys2.github.io], then open MSYS2 Shell to download latest repo with `pacman -Sy`.
-  2. Install gcc from repo with `pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-libiconv`. Choose gcc only option if prompted.
+  2. Install gcc from repo with `pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-libiconv`. Choose gcc only option if prompted.
   3. Open the MinGW Shell, ensure `which gcc` returns `/mingw64/gcc`.
   4. Add elxir bin folder and erlang bin folder to your $PATH, then run `mix deps.compile mailibex`.
-  4. Once the dll is compiled in priv folder, MSYS2 is no longer required as the dll compiled is native and redistributable.
+  4. Once the dll is compiled in your priv folder, MSYS2 is no longer required as the dll compiled is native and redistributable.
   """
   def run(_) do
     lib_ext = if {:win32, :nt} == :os.type, do: "dll", else: "so"
