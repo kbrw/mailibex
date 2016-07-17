@@ -13,9 +13,9 @@ defmodule MimeTypes do
      end)
 
   def ext2mime(""), do: "text/plain"
-  Enum.each ext2mime, fn {ext,mime}->
+  ext2mime |> Enum.uniq_by(&elem(&1,0)) |> Enum.sort_by(& &1 |> elem(0) |> byte_size) |> Enum.reverse |> Enum.each(fn {ext,mime}->
     def ext2mime(unquote("."<>ext)), do: unquote(mime)
-  end
+  end)
   def ext2mime(_), do: "application/octet-stream"
 
   Enum.each mime2ext, fn {mime,ext}->
