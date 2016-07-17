@@ -7,6 +7,8 @@ defmodule MimeMail do
   @behaviour Access
   defdelegate get_and_update(dict,k,v), to: Map
   defdelegate fetch(dict,k), to: Map
+  defdelegate get(dict,k,v), to: Map
+  defdelegate pop(dict,k), to: Map
 
   def from_string(data) do
     [headers,body]= String.split(data,"\r\n\r\n",parts: 2)
