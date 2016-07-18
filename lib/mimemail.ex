@@ -11,7 +11,10 @@ defmodule MimeMail do
   defdelegate pop(dict,k), to: Map
 
   def from_string(data) do
-    [headers,body]= String.split(data,"\r\n\r\n",parts: 2)
+    [headers, body] = case String.split(data, "\r\n\r\n", parts: 2) do
+      two_parts = [_, _] -> two_parts
+      _one_part = [h] -> [h, ""]
+    end
     headers=headers
     |> String.replace(~r/\r\n([^\t ])/,"\r\n!\\1")
     |> String.split("\r\n!")
