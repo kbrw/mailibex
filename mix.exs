@@ -34,7 +34,7 @@ defmodule Mailibex.Mixfile do
 
   def project do
     [app: :mailibex,
-     version: "0.1.0",
+     version: "0.1.1",
      elixir: "~> 1.0",
      description: description,
      package: package,
@@ -47,7 +47,7 @@ defmodule Mailibex.Mixfile do
   end
 
   defp package do
-    [ maintainers: ["Arnaud Wetzel"],
+    [ maintainers: ["Arnaud Wetzel","heri16"],
       licenses: ["The MIT License (MIT)"],
       links: %{ "GitHub"=>"https://github.com/awetzel/mailibex" } ]
   end
