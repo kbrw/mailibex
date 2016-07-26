@@ -1,4 +1,7 @@
 defmodule MimeMail do
+  @on_load :preload_atoms
+  @atoms_to_preload [:'content-transfer-encoding', :'content-type', :'content-disposition', :'content-id', :'delivered-to']
+  
   @type header :: {:raw,binary} | MimeMail.Header.t #ever the raw line or any term implementing MimeMail.Header.to_ascii
   @type body :: binary | [MimeMail.t] | {:raw,binary} #ever the raw body or list of mail for multipart or binary for decoded content
   @type t :: %MimeMail{headers: [{key::binary,header}], body: body}
@@ -10,6 +13,8 @@ defmodule MimeMail do
   defdelegate get(dict,k,v), to: Map
   defdelegate pop(dict,k), to: Map
 
+  def preload_atoms, do: @atoms_to_preload |> Enum.each(&is_atom/1)
+
   def from_string(data) do
     [headers, body] = case String.split(data, "\r\n\r\n", parts: 2) do
       two_parts = [_, _] -> two_parts
@@ -19,7 +24,14 @@ defmodule MimeMail do
     |> String.replace(~r/\r\n([^\t ])/,"\r\n!\\1")
     |> String.split("\r\n!")
     |> Enum.map(&{String.split(&1,~r/\s*:/,parts: 2),&1})
-    headers=for {[k,_],v}<-headers, do: {:"#{String.downcase(k)}", {:raw,v}}
+    headers = for {[k,_],v}<-headers do
+      k = k |> String.downcase
+      try do
+        {k |> String.to_existing_atom, {:raw,v}}
+      rescue
+        ArgumentError -> {k, {:raw,v}}
+      end
+    end
     %MimeMail{headers: headers, body: {:raw,body}}
   end
 
