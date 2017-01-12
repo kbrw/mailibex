@@ -69,8 +69,11 @@ defmodule MimeMail.CTParams do
       [value] -> {value,%{}}
     end
   end
+  def normalize({value,m},k) when k in 
+    [:"content-type",:"content-transfer-encoding",:"content-disposition"], do: {String.downcase(value),m}
+  def normalize(h,_), do: h
   def decode_headers(%MimeMail{headers: headers}=mail) do
-    parsed_mail_headers=for {k,{:raw,v}}<-headers,match?("content-"<>_,"#{k}"), do: {k,v|>MimeMail.header_value|>parse_header}
+    parsed_mail_headers=for {k,{:raw,v}}<-headers,match?("content-"<>_,"#{k}"), do: {k,v|>MimeMail.header_value|>parse_header|>normalize(k)}
     %{mail| headers: Enum.reduce(parsed_mail_headers,headers, fn {k,v},acc-> Dict.put(acc,k,v) end)}
   end
 
