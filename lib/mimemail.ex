@@ -10,7 +10,9 @@ defmodule MimeMail do
   defdelegate get(dict,k,v), to: Map
   defdelegate pop(dict,k), to: Map
 
+  def fix_linebreak(data), do: Regex.replace(~r/(?<!\r)\n/, data,"\r\n")
   def from_string(data) do
+    data = fix_linebreak(data)
     [headers, body] = case String.split(data, "\r\n\r\n", parts: 2) do
       two_parts = [_, _] -> two_parts
       _one_part = [h] -> [h, ""]
