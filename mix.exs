@@ -63,7 +63,8 @@ defmodule Mailibex.Mixfile do
   
   defp deps do
     [
-      {:codepagex, "~> 0.1", optional: true}
+      {:codepagex, "~> 0.1", optional: true},
+      {:ex_doc, ">= 0.0.0", only: :dev}
     ]
   end
 end
