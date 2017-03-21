@@ -110,10 +110,10 @@ defmodule MimeMail.Words do
 
   def single_word_decode("=?"<>rest = str) do
     case String.split(rest,"?") do
-      [enc,"Q",enc_str,"="] ->
+      [enc,enc_type,enc_str,"="] when enc_type in ~w(q Q) ->
         str = q_to_binary(enc_str,[])
         MimeMail.ok_or(Iconv.conv(str,enc,"utf8"),MimeMail.ensure_ascii(str))
-      [enc,"B",enc_str,"="] ->
+      [enc,enc_type,enc_str,"="] when enc_type in ~w(b B)->
         str = Base.decode64(enc_str) |> MimeMail.ok_or(enc_str)
         MimeMail.ok_or(Iconv.conv(str,enc,"utf8"),MimeMail.ensure_ascii(str))
       _ -> "#{str} "
