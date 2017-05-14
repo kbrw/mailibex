@@ -1,9 +1,10 @@
 defmodule MimeMail.Flat do
   def to_mail(headers_flat_body) do
-    {flat_body,headers} = Enum.partition(headers_flat_body,fn {k,_}->k in [:txt,:html,:attach,:include,:attach_in] end)
+    {flat_body,headers} = Enum.partition(headers_flat_body,fn {k,_}->k in [:txt,:html,:ical,:attach,:include,:attach_in] end)
     htmlcontent =  mail_htmlcontent(flat_body[:html],for({:include,v}<-flat_body,do: expand_attached(v)))
     plaincontent = mail_plaincontent(flat_body[:txt])
-    content = mail_content(htmlcontent,plaincontent)
+    icalcontent = mail_icalcontent(flat_body[:ical])
+    content = mail_content([plaincontent,htmlcontent,icalcontent] |> Enum.reject(&is_nil/1))
     %{headers: bodyheaders, body: body} = mail_final(content,for({:attach,v}<-flat_body,do: expand_attached(v)),
                                                              for({:attach_in,v}<-flat_body,do: expand_attached(v)))
     %MimeMail{headers: headers++bodyheaders, body: body}
@@ -62,6 +63,10 @@ defmodule MimeMail.Flat do
     [txt: body]
   def find_bodies({"text/plain",_},nil,_,body), do:
     [txt: body]
+  def find_bodies({"text/calendar",%{method: method}},{"inline",_},_,body), do:
+    [ical: {method,body}]
+  def find_bodies({"text/calendar",%{method: method}},nil,_,body), do:
+    [ical: {method,body}]
   # default disposition is attachments, default id is name or guess from mime
   def find_bodies(ct,nil,id,body), do: 
     find_bodies(ct,{"attachment",%{}},id,body)
@@ -95,13 +100,17 @@ defmodule MimeMail.Flat do
   defp mail_plaincontent(body), do:
     %MimeMail{headers: ['content-type': {"text/plain",%{}}], body: body}
 
-  defp mail_content(nil,nil), do: mail_plaincontent(" ")
-  defp mail_content(htmlcontent,nil), do: htmlcontent
-  defp mail_content(nil,plaincontent), do: plaincontent
-  defp mail_content(htmlcontent,plaincontent), do:
+  defp mail_icalcontent(nil), do: nil
+  defp mail_icalcontent(body) when is_binary(body), do: mail_icalcontent({:request,body})
+  defp mail_icalcontent({method,body}), do: 
+    %MimeMail{headers: ['content-type': {"text/calendar",%{method: String.upcase("#{method}")}}], body: body}
+
+  defp mail_content([]), do: mail_plaincontent(" ")
+  defp mail_content([singlecontent]), do: singlecontent
+  defp mail_content([_|_]=contents), do:
     %MimeMail{
       headers: ['content-type': {"multipart/alternative",%{}}], 
-      body: [plaincontent,htmlcontent] 
+      body: contents 
     }
 
   defp mail_final(content,[],[]), do: content
