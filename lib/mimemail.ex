@@ -77,7 +77,7 @@ defmodule MimeMail do
   end
   def encode_body(%MimeMail{body: childs}=mail) when is_list(childs) do
     mail = MimeMail.CTParams.decode_headers(mail)
-    boundary = Base.encode16(:crypto.rand_bytes(20), case: :lower)
+    boundary = Base.encode16(:crypto.strong_rand_bytes(20), case: :lower)
     full_boundary = "--#{boundary}"
     {"multipart/"<>_=type,params} = mail.headers[:'content-type']
     headers = Dict.delete(mail.headers,:'content-type')
