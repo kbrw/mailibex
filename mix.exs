@@ -36,10 +36,10 @@ defmodule Mailibex.Mixfile do
     [app: :mailibex,
      version: "0.1.4",
      elixir: "> 1.0.0",
-     description: description,
-     package: package,
+     description: description(),
+     package: package(),
      compilers: [:iconv, :elixir, :app],
-     deps: deps]
+     deps: deps()]
   end
 
   def application do

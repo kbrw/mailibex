@@ -12,10 +12,10 @@ defmodule SPF do
   """
   def check(sender,ip,param_list \\ []) do
     domain = sender|>String.split("@")|>Enum.at(1)
-    server_domain = param_list[:server_domain] || guess_fqdn
+    server_domain = param_list[:server_domain] || guess_fqdn()
     helo = param_list[:helo] || "unknown"
     checkhost_params = %{sender: sender,client_ip: ip, server_domain: server_domain, helo: helo, domain: domain}
-    lookup_limit_reset
+    lookup_limit_reset()
     if param_list[:spf] do
       apply_rule(param_list[:spf],checkhost_params)
     else
@@ -32,7 +32,7 @@ defmodule SPF do
   # check_host param = %{sender: "me@example.org", client_ip: {1,2,3,4}, helo: "relay.com", server_domain: "me.com", domain: "example.org"}
   # check_host returns : none, :neutral,:pass,{:fail,msg},:softfail,:temperror,:permerror
   defp check_host(params) do
-    if lookup_limit_exceeded do :permerror else
+    if lookup_limit_exceeded() do :permerror else
       case :inet_res.lookup('#{params.domain}', :in, :txt, edns: 0) do
         [] -> :temperror
         recs ->
@@ -77,7 +77,7 @@ defmodule SPF do
         {:fail,nil}->{:fail,defaultfail}
         {:fail,expdomain}->
           try do
-            false = lookup_limit_exceeded
+            false = lookup_limit_exceeded()
             [rec] = :inet_res.lookup('#{expdomain}', :in, :txt, edns: 0)
             {:fail,rec|>IO.chardata_to_string|>target_name(params)}
           catch _, _ -> {:fail,defaultfail}
@@ -112,7 +112,7 @@ defmodule SPF do
     domain_spec = if match?(":"<>_,arg), do: String.lstrip(arg,?:), else: params.domain<>arg
     family = if tuple_size(params.client_ip) == 4, do: :inet, else: :inet6
     {domain,prefix}=extract_prefix(target_name(domain_spec,params),family)
-    false = lookup_limit_exceeded
+    false = lookup_limit_exceeded()
     case :inet_res.gethostbyname('#{domain}',family) do
       {:ok,{:hostent,_,_,_,_,ip_list}}-> 
         if Enum.any?(ip_list,&ip_in_network(params.client_ip,&1,prefix)), do: :match, else: :notmatch
@@ -123,12 +123,12 @@ defmodule SPF do
     domain_spec = if match?(":"<>_,arg), do: String.lstrip(arg,?:), else: params.domain<>arg
     family = if tuple_size(params.client_ip) == 4, do: :inet, else: :inet6
     {domain,prefix}=extract_prefix(target_name(domain_spec,params),family)
-    false = lookup_limit_exceeded
+    false = lookup_limit_exceeded()
     case :inet_res.lookup('#{domain}', :in, :mx, edns: 0) do
       []->:notmatch
       res-> 
         Enum.find_value(res,fn {_prio,name}->
-          false = lookup_limit_exceeded
+          false = lookup_limit_exceeded()
           case :inet_res.gethostbyname(name,family) do
             {:ok,{:hostent,_,_,_,_,ip_list}}-> 
               if Enum.any?(ip_list,&ip_in_network(params.client_ip,&1,prefix)), do: :match
@@ -140,10 +140,10 @@ defmodule SPF do
   def term_match("ptr"<>arg,params) do
     domain_spec = if arg=="", do: params.domain, else: String.lstrip(arg,?:)
     family = if tuple_size(params.client_ip) == 4, do: :inet, else: :inet6
-    false = lookup_limit_exceeded
+    false = lookup_limit_exceeded()
     case :inet_res.gethostbyaddr(params.client_ip) do
       {:ok,{:hostent,name,_,_,_,_}}->
-        false = lookup_limit_exceeded
+        false = lookup_limit_exceeded()
         case :inet_res.gethostbyname(name,family) do
           {:ok,{:hostent,_,_,_,_,ip_list}}-> 
             if params.client_ip in ip_list do
@@ -166,7 +166,7 @@ defmodule SPF do
     end
   end
   def term_match("exists:"<>domain_spec,params) do
-    false = lookup_limit_exceeded
+    false = lookup_limit_exceeded()
     case :inet_res.gethostbyname('#{target_name(domain_spec,params)}',:inet) do
       {:ok,{:hostent,_,_,_,_,ip_list}} when length(ip_list)>0-> :match
       _->:notmatch
@@ -254,11 +254,11 @@ defmodule SPF do
     ip4 |> Tuple.to_list |> Enum.join(".")
   end
   def target_name_macro("p",%{client_ip: ip}) do
-    false = lookup_limit_exceeded
+    false = lookup_limit_exceeded()
     family = if tuple_size(ip) == 4, do: :inet, else: :inet6
     case :inet_res.gethostbyaddr(ip) do
       {:ok,{:hostent,name,_,_,_,_}}->
-        if not lookup_limit_exceeded do
+        if not lookup_limit_exceeded() do
           case :inet_res.gethostbyname(name,family) do
             {:ok,{:hostent,_,_,_,_,ip_list}}-> 
               if ip in ip_list do "#{name}" else "unknown" end
