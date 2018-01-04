@@ -35,7 +35,7 @@ defmodule Mailibex.Mixfile do
   def project do
     [app: :mailibex,
      version: "0.1.4",
-     elixir: "> 1.0.0",
+     elixir: "> 1.3.0",
      description: description(),
      package: package(),
      compilers: [:iconv, :elixir, :app],
