@@ -1,11 +1,17 @@
 defmodule DMARC do
+  require Logger
+
   def organization(host) when is_binary(host), do: 
     organization(host |> String.downcase |> String.split(".") |> Enum.reverse)
 
   :ssl.start ; :inets.start
   case :httpc.request(:get,{'https://publicsuffix.org/list/effective_tld_names.dat',[]},[], body_format: :binary) do
-    {:ok,{{_,200,_},_,r}} -> r
-    _ -> File.read!("#{:code.priv_dir(:mailibex)}/suffix.data")
+    {:ok,{{_,200,_},_,r}} ->
+      Logger.debug("Download")
+      r
+    e ->
+      Logger.error("Fallback on priv #{inspect(e)}")
+      File.read!("#{:code.priv_dir(:mailibex)}/suffix.data")
   end 
   |> String.strip
   |> String.split("\n")
