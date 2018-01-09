@@ -42,11 +42,15 @@ defmodule MimeHeadersTest do
   test "decode str from base 64 encoded-word" do
     assert "Jérôme Nicolle"
            = MimeMail.Words.word_decode("=?UTF-8?B?SsOpcsO0bWUgTmljb2xsZQ==?=")
+    assert "Jérôme Nicolle"
+           = MimeMail.Words.word_decode("=?utf-8?b?SsOpcsO0bWUgTmljb2xsZQ==?=")
   end
 
   test "decode str from q-encoded-word" do
     assert "[FRnOG] [TECH] ToS implémentée chez certains transitaires" 
            = MimeMail.Words.word_decode("[FRnOG] =?UTF-8?Q?=5BTECH=5D_ToS_impl=C3=A9ment=C3=A9e_chez_certa?=\r\n =?UTF-8?Q?ins_transitaires?=")
+    assert "[FRnOG] [TECH] ToS implémentée chez certains transitaires"
+           = MimeMail.Words.word_decode("[FRnOG] =?utf-8?q?=5BTECH=5D_ToS_impl=C3=A9ment=C3=A9e_chez_certa?=\r\n =?utf-8?q?ins_transitaires?=")
   end
 
   test "encode str into multiple encoded-word, test line length and round trip" do

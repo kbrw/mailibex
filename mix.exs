@@ -1,4 +1,6 @@
 defmodule Mix.Tasks.Compile.Iconv do
+  use Mix.Task
+
   @shortdoc "Compiles Iconv"
   @doc """
   For Linux:

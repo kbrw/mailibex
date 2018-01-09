@@ -20,7 +20,7 @@ defmodule MimeMail.Emails do
     data |> String.strip |> String.split(~r/\s*,\s*/) |> Enum.map(&MimeMail.Address.decode/1)
   end
   def decode_headers(%MimeMail{headers: headers}=mail) do
-    parsed=for {k,{:raw,v}}<-headers, k in [:from,:to,:cc,:cci,:'delivered-to'] do
+    parsed=for {k,{:raw,v}}<-headers, k in [:sender,:from,:to,:cc,:cci,:'reply-to',:'delivered-to'] do
       {k,v|>MimeMail.header_value|>parse_header}
     end
     %{mail| headers: Enum.reduce(parsed,headers, fn {k,v},acc-> Dict.put(acc,k,v) end)}
@@ -110,10 +110,10 @@ defmodule MimeMail.Words do
 
   def single_word_decode("=?"<>rest = str) do
     case String.split(rest,"?") do
-      [enc,"Q",enc_str,"="] ->
+      [enc,enc_type,enc_str,"="] when enc_type in ~w(q Q) ->
         str = q_to_binary(enc_str,[])
         MimeMail.ok_or(Iconv.conv(str,enc,"utf8"),MimeMail.ensure_ascii(str))
-      [enc,"B",enc_str,"="] ->
+      [enc,enc_type,enc_str,"="] when enc_type in ~w(b B)->
         str = Base.decode64(enc_str) |> MimeMail.ok_or(enc_str)
         MimeMail.ok_or(Iconv.conv(str,enc,"utf8"),MimeMail.ensure_ascii(str))
       _ -> "#{str} "
