@@ -78,7 +78,7 @@ defmodule MimeMail.Flat do
     [attach: {(id |> String.rstrip(?>) |> String.lstrip(?<)),mime,body}]
 
   def gen_id(ext), do:
-    "#{Base.encode16(:crypto.rand_bytes(16), case: :lower)}#{ext}"
+    "#{Base.encode16(:crypto.strong_rand_bytes(16), case: :lower)}#{ext}"
 
   defp mail_htmlcontent(nil,_), do: nil
   defp mail_htmlcontent(body,[]), do:
