@@ -8,9 +8,12 @@ defmodule MimeMail.Address do
   defdelegate pop(dict,k), to: Map
 
   def decode(addr_spec) do
-    case Regex.run(~r/^([^<]*)<([^>]*)>/,addr_spec) do
-      [_,desc,addr]->%MimeMail.Address{name: MimeMail.Words.word_decode(desc), address: addr}
-      _ -> %MimeMail.Address{name: nil, address: String.strip(addr_spec)}
+    case Regex.run(~r/^([^<]*)<([^>]*)>/, addr_spec) do
+      [_, desc, addr] ->
+        name = desc |> MimeMail.Words.word_decode() |> String.trim("\"")
+        %MimeMail.Address{name: name, address: addr}
+      _ ->
+        %MimeMail.Address{name: nil, address: String.strip(addr_spec)}
     end
   end
 
@@ -23,7 +26,7 @@ end
 
 defmodule MimeMail.Emails do
   def parse_header(data) do
-    data |> String.strip |> String.split(~r/\s*,\s*/) |> Enum.map(&MimeMail.Address.decode/1)
+    data |> String.strip |> String.split(~r/(?!\B"[^"]*),(?![^"]*"\B)/) |> Enum.map(&MimeMail.Address.decode/1)
   end
   def decode_headers(%MimeMail{headers: headers}=mail) do
     parsed=for {k,{:raw,v}}<-headers, k in [:from,:to,:cc,:cci,:'delivered-to'] do
