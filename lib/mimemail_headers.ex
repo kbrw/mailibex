@@ -1,6 +1,12 @@
 defmodule MimeMail.Address do
   defstruct name: nil, address: ""
 
+  @behaviour Access
+  defdelegate get_and_update(dict,k,v), to: Map
+  defdelegate fetch(dict,k), to: Map
+  defdelegate get(dict,k,v), to: Map
+  defdelegate pop(dict,k), to: Map
+
   def decode(addr_spec) do
     case Regex.run(~r/^([^<]*)<([^>]*)>/,addr_spec) do
       [_,desc,addr]->%MimeMail.Address{name: MimeMail.Words.word_decode(desc), address: addr}
@@ -27,7 +33,7 @@ defmodule MimeMail.Emails do
   end
   defimpl MimeMail.Header, for: List do # a list header is a mailbox spec list
     def to_ascii(mail_list) do # a mail is a struct %{name: nil, address: ""}
-      mail_list 
+      mail_list
       |> Enum.filter(&match?(%MimeMail.Address{},&1))
       |> Enum.map(&MimeMail.Header.to_ascii/1) |> Enum.join(", ")
     end
@@ -37,13 +43,13 @@ end
 defmodule MimeMail.Params do
   def parse_header(bin), do: parse_kv(bin<>";",:key,[],[])
 
-  def parse_kv(<<c,rest::binary>>,:key,keyacc,acc) when c in [?\s,?\t,?\r,?\n,?;], do: 
+  def parse_kv(<<c,rest::binary>>,:key,keyacc,acc) when c in [?\s,?\t,?\r,?\n,?;], do:
     parse_kv(rest,:key,keyacc,acc) # not allowed characters in key, skip
-  def parse_kv(<<?=,?",rest::binary>>,:key,keyacc,acc), do: 
+  def parse_kv(<<?=,?",rest::binary>>,:key,keyacc,acc), do:
     parse_kv(rest,:quotedvalue,[],[{:"#{keyacc|>Enum.reverse|>to_string|>String.downcase}",""}|acc]) # enter in a quoted value, save key in res acc
-  def parse_kv(<<?=,rest::binary>>,:key,keyacc,acc), do: 
+  def parse_kv(<<?=,rest::binary>>,:key,keyacc,acc), do:
     parse_kv(rest,:value,[],[{:"#{keyacc|>Enum.reverse|>to_string|>String.downcase}",""}|acc]) # enter in a simple value, save key in res acc
-  def parse_kv(<<c,rest::binary>>,:key,keyacc,acc), do: 
+  def parse_kv(<<c,rest::binary>>,:key,keyacc,acc), do:
     parse_kv(rest,:key,[c|keyacc],acc) # allowed char in key, add to key acc
   def parse_kv(<<?\\,?",rest::binary>>,:quotedvalue,valueacc,acc), do:
     parse_kv(rest,:quotedvalue,[?"|valueacc],acc) # \" in quoted value is "
@@ -69,7 +75,7 @@ defmodule MimeMail.CTParams do
       [value] -> {value,%{}}
     end
   end
-  def normalize({value,m},k) when k in 
+  def normalize({value,m},k) when k in
     [:"content-type",:"content-transfer-encoding",:"content-disposition"], do: {String.downcase(value),m}
   def normalize(h,_), do: h
   def decode_headers(%MimeMail{headers: headers}=mail) do
@@ -91,7 +97,7 @@ defmodule MimeMail.Words do
   def word_encode(line) do
     if is_ascii(line) do line else
       for <<char::utf8<-line>> do
-        case char do 
+        case char do
           ?\s -> ?_
           c when c < 127 and c > 32 and c !== ?= and c !== ?? and c !== ?_-> c
           c -> for(<<a,b<-Base.encode16(<<c::utf8>>)>>,into: "",do: <<?=,a,b>>)
@@ -121,9 +127,9 @@ defmodule MimeMail.Words do
   end
   def single_word_decode(str), do: "#{str} "
 
-  def q_to_binary("_"<>rest,acc), do: 
+  def q_to_binary("_"<>rest,acc), do:
     q_to_binary(rest,[?\s|acc])
-  def q_to_binary(<<?=,x1,x2>><>rest,acc), do: 
+  def q_to_binary(<<?=,x1,x2>><>rest,acc), do:
     q_to_binary(rest,[<<x1,x2>> |> String.upcase |> Base.decode16! | acc])
   def q_to_binary(<<c,rest::binary>>,acc), do:
     q_to_binary(rest,[c | acc])
