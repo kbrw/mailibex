@@ -13,13 +13,26 @@ defmodule MimeHeadersTest do
   end
 
   test "decode addresses headers" do
-    mail = File.read!("test/mails/encoded.eml") 
+    mail = File.read!("test/mails/encoded.eml")
     |> MimeMail.from_string
     |> MimeMail.Emails.decode_headers
     assert [%MimeMail.Address{name: "Jérôme Nicolle", address: "jerome@ceriz.fr"}]
            = mail.headers[:from]
     assert [%MimeMail.Address{address: "frnog@frnog.org"}]
            = mail.headers[:to]
+  end
+
+  test "decode addresses headers with quoted-commas" do
+    mail = %MimeMail{
+      headers: [
+        from: {:raw, "From: \"LastName, FirstName\" <mailbox@domain.tld>"}
+      ]
+    }
+
+    %MimeMail{headers: headers} = MimeMail.Emails.decode_headers(mail)
+    assert headers == [
+      from: [%MimeMail.Address{address: "mailbox@domain.tld", name: "LastName, FirstName"}]
+    ]
   end
 
   test "encode addresses headers" do
@@ -33,7 +46,7 @@ defmodule MimeHeadersTest do
            = (headers[:to] |> MimeMail.header_value |> String.replace(~r/\s+/," "))
     assert "frnog@frnog.org" = MimeMail.header_value(headers[:from])
   end
-  
+
   test "round trip encoded-words" do
     assert "Jérôme Nicolle gave me €"
            = ("Jérôme Nicolle gave me €" |> MimeMail.Words.word_encode |> MimeMail.Words.word_decode)
@@ -45,7 +58,7 @@ defmodule MimeHeadersTest do
   end
 
   test "decode str from q-encoded-word" do
-    assert "[FRnOG] [TECH] ToS implémentée chez certains transitaires" 
+    assert "[FRnOG] [TECH] ToS implémentée chez certains transitaires"
            = MimeMail.Words.word_decode("[FRnOG] =?UTF-8?Q?=5BTECH=5D_ToS_impl=C3=A9ment=C3=A9e_chez_certa?=\r\n =?UTF-8?Q?ins_transitaires?=")
   end
 
