@@ -30,8 +30,8 @@ Currently, the library contains three types of acceptable header value (implemen
 So for instance : 
 ```elixir
 %MimeMail{headers: [
-    to: [%MimeMail.Address{name="You",address: "you@m.org"}],
-    from: [%MimeMail.Address{name="Me",address: "me@m.org"}],
+    to: [%MimeMail.Address{name: "You",address: "you@m.org"}],
+    from: [%MimeMail.Address{name: "Me",address: "me@m.org"}],
     cc: "me@m.org", # only ascii so ok to encode it as a simple encoded word
     'content-type': {'text/plain',%{charset: "utf8"}},
   ],
