@@ -26,6 +26,7 @@ defmodule Mix.Tasks.Compile.Iconv do
       args = args <> if {:win32, :nt}==:os.type, do: " -liconv", else: ""
       Mix.shell.info to_string :os.cmd('gcc #{args} -v -o #{lib_file} c_src/iconv_nif.c')
     end
+    :ok
   end
 end
 
@@ -34,7 +35,7 @@ defmodule Mailibex.Mixfile do
 
   def project do
     [app: :mailibex,
-     version: "0.1.4",
+     version: "0.1.5",
      elixir: "> 1.3.0",
      description: description(),
      package: package(),
