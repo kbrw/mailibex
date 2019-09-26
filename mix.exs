@@ -1,5 +1,4 @@
 defmodule Mix.Tasks.Compile.Iconv do
-  @shortdoc "Compiles Iconv"
   @doc """
   For Linux:
   1. Install gcc and libconv via your distro's package manager.
