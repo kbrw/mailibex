@@ -44,9 +44,15 @@ defmodule MimeMail do
   def decode_body(%MimeMail{body: {:raw,body}}=mail) do
     %{headers: headers} = mail = MimeMail.CTParams.decode_headers(mail)
     body = case headers[:'content-transfer-encoding'] do
+      nil ->
+        body
       {"quoted-printable",_}-> body |> qp_to_binary
       {"base64",_}-> body |> String.replace(~r/\s/,"") |> Base.decode64 |> ok_or("")
-      _ -> body
+      {"8bit", _} ->
+        IO.inspect(["8bit encoding", mail])
+        body
+      _ ->
+        body
     end
     body = case headers[:'content-type'] do
       {"multipart/"<>_,%{boundary: bound}}-> 
