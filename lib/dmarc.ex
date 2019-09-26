@@ -16,7 +16,7 @@ defmodule DMARC do
   end 
   |> String.strip
   |> String.split("\n")
-  |> Enum.filter(fn <<c,_::binary>>->not c in [?\s,?/]; _-> false end) # remove comments
+  |> Enum.filter(fn <<c,_::binary>>-> c not in [?\s,?/]; _-> false end) # remove comments
   |> Enum.map(&String.split(&1,"."))                                   # divide domain components
   |> Enum.sort(fn                                                      # sort rule by priority 
        ["!"<>_|_],_ -> true                                            # exception rules are first ones
