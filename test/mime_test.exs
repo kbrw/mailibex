@@ -89,7 +89,7 @@ defmodule MimeMailTest do
     |> MimeMail.to_string 
     |> MimeMail.from_string 
     |> MimeMail.decode_body
-    assert String.rstrip(decoded.body) == String.rstrip(roundtrip.body)
+    assert String.trim_trailing(decoded.body) == String.trim_trailing(roundtrip.body)
   end
 
   test "email bodies with wrong encoding must be converted to printable utf8" do
