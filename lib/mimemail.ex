@@ -50,7 +50,7 @@ defmodule MimeMail do
     end
     body = case headers[:'content-type'] do
       {"multipart/"<>_,%{boundary: bound}}-> 
-        body |> String.split(~r"\s*--#{bound}\s*") |> Enum.slice(1..-2) |> Enum.map(&from_string/1) |> Enum.map(&decode_body/1)
+        body |> String.split(~r"\s*--#{Regex.escape(bound)}\s*") |> Enum.slice(1..-2) |> Enum.map(&from_string/1) |> Enum.map(&decode_body/1)
       {"text/"<>_,%{charset: charset}} ->
         body |> Iconv.conv(charset,"utf8") |> ok_or(ensure_ascii(body)) |> ensure_utf8
       _ -> body
