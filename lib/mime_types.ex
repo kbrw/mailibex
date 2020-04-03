@@ -3,14 +3,14 @@ defmodule MimeTypes do
   {ext2mime,mime2ext} = case :httpc.request('https://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types') do
     {:ok,{{_,200,_},_,r}} -> "#{r}"
     _ -> File.read!("#{:code.priv_dir(:mailibex)}/mime.types")
-  end 
-  |> String.strip 
+  end
+  |> String.strip
   |> String.split("\n")
-  |> Enum.filter(&not(Regex.match?(~r"^\s*#",&1))) #remove comments
-  |> Enum.reduce({[],[]},fn line,{ext2mime,mime2ext}-> #construct dict and reverse dict ext->mime
-       [mime|exts] = line |> String.strip |> String.split(~r/\s+/)
-       {Enum.into(for(ext<-exts,do: {ext,mime}),ext2mime),[{mime,hd(exts)}|mime2ext]}
-     end)
+  |> Enum.filter(&not(Regex.match?(~r"^\s*#",&1)))#remove comments
+  |> Enum.reduce({%{}, []},fn line,{ext2mime,mime2ext}-> #construct dict and reverse dict ext->mime
+    [mime|exts] = line |> String.strip |> String.split(~r/\s+/)
+    {Enum.into(Enum.map(exts, fn ext -> {ext, mime} end),ext2mime),[{mime,hd(exts)}|mime2ext]}
+  end)
 
   def ext2mime(""), do: "text/plain"
   ext2mime |> Enum.uniq_by(&elem(&1,0)) |> Enum.sort_by(& &1 |> elem(0) |> byte_size) |> Enum.reverse |> Enum.each(fn {ext,mime}->
