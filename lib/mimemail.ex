@@ -121,7 +121,7 @@ defmodule MimeMail do
   def fold_header(header), do:
     (header |> String.split("\r\n") |> Enum.map(&fold_header(&1,[])) |> Enum.join("\r\n"))
   def fold_header(<<line::size(65)-binary,rest::binary>>,acc) do
-    case ('#{line}' |> Enum.reverse |> Enum.split_while(&(&1!==?\t and &1!==?\s))) do
+    case (to_charlist(line) |> Enum.reverse |> Enum.split_while(&(&1!==?\t and &1!==?\s))) do
       {eol,[]}-> fold_header(rest,[eol|acc])
       {eol,bol}-> fold_header("#{Enum.reverse(eol)}"<>rest,["\r\n          ",bol|acc])
     end
