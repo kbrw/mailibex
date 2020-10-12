@@ -1,7 +1,7 @@
 mailibex [![Build Status](https://travis-ci.org/kbrw/mailibex.svg?branch=master)](https://travis-ci.org/kbrw/mailibex) 
 ========
 
-Library containing Email related implementations in Elixir : dkim, spf, dmark, mimemail, smtp
+Library containing Email related implementations in Elixir : dkim, spf, dmarc, mimemail, smtp
 
 ## MimeMail ##
 
@@ -92,7 +92,7 @@ Organizational Domain implementation using public suffix database :
 (https://publicsuffix.org/list/effective_tld_names.dat)
 
 ```elixir
-"orga2.gouv.fr" = DMARK.organization "orga0.orga1.orga2.gouv.fr"
+"orga2.gouv.fr" = DMARC.organization "orga0.orga1.orga2.gouv.fr"
 ```
 
 ## SPF ##
