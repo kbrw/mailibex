@@ -14,7 +14,7 @@ Library containing Email related implementations in Elixir : dkim, spf, dmark, m
 # If body is a text, then the decoded body binary will be the UTF8 version of the text converted from the source charset
 ```
 
-- `MimeMail.from_string` parse the mimemail binary into a `MimeMail` struct explained above, with all the headers and body in their encoded form ('{:raw,binary}`)
+- `MimeMail.from_string` parse the mimemail binary into a `MimeMail` struct explained above, with all the headers and body in their encoded form (`{:raw,binary}`)
 - `MimeMail.encode_headers(mail)` apply the `MimeMail.Header.to_ascii` to every header to convert them into a `{:raw,binary}` form.
 - `MimeMail.decode_headers(mail,[Mod1,Mod2])` applies successively `Mod1.decode_headers(mail)` the `Mod2.decode_headers(mail)` to the result.
 - `MimeMail.encode_body(mail)` encodes the mail body from a decoded form (`binary | [MimeMail]`) into a `{:raw,binary}`form
