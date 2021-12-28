@@ -48,8 +48,8 @@ defmodule SPF do
 
   def apply_rule(rule,params) do
     try do
-      terms = rule |> String.strip |> String.split(" ")
-      {modifiers,mechanisms} = Enum.partition(terms,&Regex.match?(~r/^[^:\/]+=/,&1))
+      terms = rule |> String.trim() |> String.split(" ")
+      {modifiers,mechanisms} = Enum.split_with(terms,&Regex.match?(~r/^[^:\/]+=/,&1))
       modifiers = Enum.map modifiers, fn modifier->
         [name,value]=String.split(modifier,"=")
         {:"#{name}",target_name(value,params) || ""}
@@ -109,7 +109,7 @@ defmodule SPF do
     end
   end
   def term_match("a"<>arg,params) do
-    domain_spec = if match?(":"<>_,arg), do: String.lstrip(arg,?:), else: params.domain<>arg
+    domain_spec = if match?(":"<>_,arg), do: String.trim_leading(arg, ":"), else: params.domain<>arg
     family = if tuple_size(params.client_ip) == 4, do: :inet, else: :inet6
     {domain,prefix}=extract_prefix(target_name(domain_spec,params),family)
     false = lookup_limit_exceeded()
@@ -120,7 +120,7 @@ defmodule SPF do
     end
   end
   def term_match("mx"<>arg,params) do
-    domain_spec = if match?(":"<>_,arg), do: String.lstrip(arg,?:), else: params.domain<>arg
+    domain_spec = if match?(":"<>_,arg), do: String.trim_leading(arg, ":"), else: params.domain<>arg
     family = if tuple_size(params.client_ip) == 4, do: :inet, else: :inet6
     {domain,prefix}=extract_prefix(target_name(domain_spec,params),family)
     false = lookup_limit_exceeded()
@@ -138,7 +138,7 @@ defmodule SPF do
     end
   end
   def term_match("ptr"<>arg,params) do
-    domain_spec = if arg=="", do: params.domain, else: String.lstrip(arg,?:)
+    domain_spec = if arg=="", do: params.domain, else: String.trim_leading(arg, ":")
     family = if tuple_size(params.client_ip) == 4, do: :inet, else: :inet6
     false = lookup_limit_exceeded()
     case :inet_res.gethostbyaddr(params.client_ip) do
@@ -248,7 +248,7 @@ defmodule SPF do
     |> Base.encode16(case: :lower)
     |> String.split("")
     |> Enum.join(".")
-    |> String.strip(?.)
+    |> String.trim(".")
   end
   def target_name_macro("i",%{client_ip: {_,_,_,_}=ip4}) do
     ip4 |> Tuple.to_list |> Enum.join(".")

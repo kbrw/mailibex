@@ -4,7 +4,7 @@ defmodule MimeMail.Address do
   def decode(addr_spec) do
     case Regex.run(~r/^([^<]*)<([^>]*)>/,addr_spec) do
       [_,desc,addr]->%MimeMail.Address{name: MimeMail.Words.word_decode(desc), address: addr}
-      _ -> %MimeMail.Address{name: nil, address: String.strip(addr_spec)}
+      _ -> %MimeMail.Address{name: nil, address: String.trim(addr_spec)}
     end
   end
 
@@ -17,13 +17,13 @@ end
 
 defmodule MimeMail.Emails do
   def parse_header(data) do
-    data |> String.strip |> String.split(~r/\s*,\s*/) |> Enum.map(&MimeMail.Address.decode/1)
+    data |> String.trim() |> String.split(~r/\s*,\s*/) |> Enum.map(&MimeMail.Address.decode/1)
   end
   def decode_headers(%MimeMail{headers: headers}=mail) do
     parsed=for {k,{:raw,v}}<-headers, k in [:from,:to,:cc,:cci,:'delivered-to'] do
       {k,v|>MimeMail.header_value|>parse_header}
     end
-    %{mail| headers: Enum.reduce(parsed,headers, fn {k,v},acc-> Dict.put(acc,k,v) end)}
+    %{mail| headers: Keyword.merge(headers, parsed)}
   end
   defimpl MimeMail.Header, for: List do # a list header is a mailbox spec list
     def to_ascii(mail_list) do # a mail is a struct %{name: nil, address: ""}
@@ -50,7 +50,7 @@ defmodule MimeMail.Params do
   def parse_kv(<<?",rest::binary>>,:quotedvalue,valueacc,[{key,_}|acc]), do:
     parse_kv(rest,:key,[],[{key,"#{Enum.reverse(valueacc)}"}|acc]) # " in quoted value end the value
   def parse_kv(<<?;,rest::binary>>,:value,valueacc,[{key,_}|acc]), do:
-    parse_kv(rest,:key,[],[{key,String.strip("#{Enum.reverse(valueacc)}")}|acc]) # ; in simple value ends the value and strip it
+    parse_kv(rest,:key,[],[{key,String.trim("#{Enum.reverse(valueacc)}")}|acc]) # ; in simple value ends the value and strip it
   def parse_kv(<<c,rest::binary>>,isvalue,valueacc,acc) when isvalue in [:value,:quotedvalue], do:
     parse_kv(rest,isvalue,[c|valueacc],acc) # allowed char in value, add to acc
   def parse_kv(_,_,_,acc), do:
@@ -74,7 +74,7 @@ defmodule MimeMail.CTParams do
   def normalize(h,_), do: h
   def decode_headers(%MimeMail{headers: headers}=mail) do
     parsed_mail_headers=for {k,{:raw,v}}<-headers,match?("content-"<>_,"#{k}"), do: {k,v|>MimeMail.header_value|>parse_header|>normalize(k)}
-    %{mail| headers: Enum.reduce(parsed_mail_headers,headers, fn {k,v},acc-> Dict.put(acc,k,v) end)}
+    %{mail| headers: Keyword.merge(headers, parsed_mail_headers)}
   end
 
   defimpl MimeMail.Header, for: Tuple do # a 2 tuple header is "value; key1=value1; key2=value2"
@@ -105,7 +105,7 @@ defmodule MimeMail.Words do
   defp chunk_line(other), do: [other]
 
   def word_decode(str) do
-    str |> String.split(~r/\s+/) |> Enum.map(&single_word_decode/1) |> Enum.join |> String.rstrip
+    str |> String.split(~r/\s+/) |> Enum.map(&single_word_decode/1) |> Enum.join() |> String.trim_trailing()
   end
 
   def single_word_decode("=?"<>rest = str) do
@@ -132,7 +132,7 @@ defmodule MimeMail.Words do
 
   def decode_headers(%MimeMail{headers: headers}=mail) do
     parsed_mail_headers=for {k,{:raw,v}}<-headers, k in [:subject], do: {k,v|>MimeMail.header_value|>word_decode}
-    %{mail| headers: Enum.reduce(parsed_mail_headers,headers, fn {k,v},acc-> Dict.put(acc,k,v) end)}
+    %{mail| headers: Keyword.merge(headers, parsed_mail_headers)}
   end
 
   defimpl MimeMail.Header, for: BitString do # a 2 tuple header is "value; key1=value1; key2=value2"

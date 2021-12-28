@@ -4,6 +4,7 @@ defmodule SPFTest do
 
   setup_all do
     :code.unstick_dir(:code.lib_dir(:kernel)++'/ebin')
+    previous_compiler_options = Code.compiler_options(ignore_module_conflict: true)
     defmodule :inet_res do #mock external dns calls to hard define SPF rules
       def lookup(dns,type,class,_opts), do: lookup(dns,type,class)
     
@@ -121,6 +122,7 @@ defmodule SPFTest do
 
       def lookup(_,_,_), do: []
     end
+    _ = Code.compiler_options(previous_compiler_options)
     :ok
   end
       

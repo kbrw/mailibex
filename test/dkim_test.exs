@@ -3,6 +3,7 @@ defmodule DKIMTest do
 
   setup_all do
     :code.unstick_dir(:code.lib_dir(:kernel)++'/ebin')
+    previous_compiler_options = Code.compiler_options(ignore_module_conflict: true)
     defmodule :inet_res do #mock external dns calls to hard define DKIM pub key when mock mails were constructed
       def lookup(dns,type,class,_opts), do: lookup(dns,type,class)
       def lookup('20120113._domainkey.gmail.com',:in,:txt) do
@@ -16,6 +17,7 @@ defmodule DKIMTest do
       end
       def lookup(_,_,_), do: []
     end
+    _ = Code.compiler_options(previous_compiler_options)
     :ok
   end
 

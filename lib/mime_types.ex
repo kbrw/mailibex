@@ -4,11 +4,11 @@ defmodule MimeTypes do
     {:ok,{{_,200,_},_,r}} -> "#{r}"
     _ -> File.read!("#{:code.priv_dir(:mailibex)}/mime.types")
   end
-  |> String.strip
+  |> String.trim()
   |> String.split("\n")
   |> Enum.filter(&not(Regex.match?(~r"^\s*#",&1)))#remove comments
   |> Enum.reduce({%{}, []},fn line,{ext2mime,mime2ext}-> #construct dict and reverse dict ext->mime
-    [mime|exts] = line |> String.strip |> String.split(~r/\s+/)
+    [mime|exts] = line |> String.trim() |> String.split(~r/\s+/)
     {Enum.into(Enum.map(exts, fn ext -> {ext, mime} end),ext2mime),[{mime,hd(exts)}|mime2ext]}
   end)
 
@@ -156,8 +156,8 @@ defmodule EBML do
   defp convert(:integer,len,bin), do: (<<i::signed-size(len)-unit(8)>>=bin;i)
   defp convert(:uinteger,len,bin), do: (<<i::unsigned-size(len)-unit(8)>>=bin;i)
   defp convert(:float,len,bin), do: (<<f::float-size(len)-unit(8)>>=bin;f)
-  defp convert(:string,_,bin), do: String.strip(bin,0)
-  defp convert(:"utf-8",_,bin), do: String.strip(bin,0)
+  defp convert(:string,_,bin), do: String.trim(bin, "\0")
+  defp convert(:"utf-8",_,bin), do: String.trim(bin, "\0")
   defp convert(:binary,_,bin), do: bin
   defp convert(:date,8,<<since2001::signed-size(8)-unit(8)>>) do
     ts = 978307200 + div(since2001,1_000_000_000)

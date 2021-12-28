@@ -32,9 +32,9 @@ defmodule DKIM do
     sig = struct(DKIM,sig_params)
     %{body: {:raw,body}}=encoded_mail=MimeMail.encode_body(mail) #ensure body is binary
     sig = %{sig| bh: body_hash(body,sig)} #add body hash
-    encoded_mail = MimeMail.encode_headers(%{encoded_mail|headers: Dict.put(encoded_mail.headers,:'dkim-signature',sig)}) #encoded mail without dkim.b
+    encoded_mail = MimeMail.encode_headers(%{encoded_mail|headers: Keyword.put(encoded_mail.headers,:'dkim-signature',sig)}) #encoded mail without dkim.b
     sig = %{sig| b: encoded_mail.headers |> headers_hash(sig) |> :public_key.sign(:sha256,key)}
-    %{encoded_mail|headers: Dict.put(encoded_mail.headers,:'dkim-signature',sig)}
+    %{encoded_mail|headers: Keyword.put(encoded_mail.headers,:'dkim-signature',sig)}
   end
 
   def decode_headers(%MimeMail{headers: headers}=mail) do
@@ -85,7 +85,7 @@ defmodule DKIM do
   def canon_header(header,:simple), do: header
   def canon_header(header,:relaxed) do
     [k,v] = String.split(header,~r/\s*:\s*/, parts: 2)
-    "#{String.downcase(k)}:#{v |> MimeMail.unfold_header |> String.replace(~r"[\t ]+"," ") |> String.rstrip}"
+    "#{String.downcase(k)}:#{v |> MimeMail.unfold_header() |> String.replace(~r"[\t ]+"," ") |> String.trim_trailing()}"
   end
 
   def canon_body(body,:simple), do:
@@ -115,7 +115,7 @@ defmodule DKIM do
   def headers_hash(headers,sig) do
     {:raw,rawsig} = headers[:"dkim-signature"]
     sig.h
-    |> Enum.filter(&Dict.has_key?(headers,&1))
+    |> Enum.filter(&Keyword.has_key?(headers,&1))
     |> Enum.map(fn k->
          {:raw,v}=headers[k]
          canon_header(v,sig.c.header)

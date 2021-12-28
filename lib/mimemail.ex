@@ -69,13 +69,13 @@ defmodule MimeMail do
     mail = MimeMail.CTParams.decode_headers(mail)
     case mail.headers[:'content-type'] do
       {"text/"<>_=type,params}-> 
-        headers = Dict.drop(mail.headers,[:'content-type',:'content-transfer-encoding']) ++[
-          'content-type': {type,Dict.put(params,:charset,"utf-8")},
+        headers = Keyword.drop(mail.headers,[:'content-type',:'content-transfer-encoding']) ++[
+          'content-type': {type,Map.put(params,:charset,"utf-8")},
           'content-transfer-encoding': "quoted-printable"
         ]
         %{mail|headers: headers, body: {:raw,string_to_qp(body)}}
       _->
-        headers = Dict.delete(mail.headers,:'content-transfer-encoding')
+        headers = Keyword.delete(mail.headers,:'content-transfer-encoding')
                  ++['content-transfer-encoding': "base64"]
         %{mail|headers: headers, body: {:raw,(body |> Base.encode64 |> chunk64 |> Enum.join("\r\n"))}}
     end
@@ -85,8 +85,8 @@ defmodule MimeMail do
     boundary = Base.encode16(:crypto.strong_rand_bytes(20), case: :lower)
     full_boundary = "--#{boundary}"
     {"multipart/"<>_=type,params} = mail.headers[:'content-type']
-    headers = Dict.delete(mail.headers,:'content-type')
-              ++['content-type': {type,Dict.put(params,:boundary,boundary)}]
+    headers = Keyword.delete(mail.headers,:'content-type')
+              ++['content-type': {type,Map.put(params,:boundary,boundary)}]
     body = childs |> Enum.map(&MimeMail.to_string/1) |> Enum.join("\r\n\r\n"<>full_boundary<>"\r\n")
     %{mail|body: {:raw,"#{full_boundary}\r\n#{body}\r\n\r\n#{full_boundary}--\r\n"}, headers: headers}
   end
@@ -110,7 +110,7 @@ defmodule MimeMail do
   defp chunk_line(other), do: other
   
   def qp_to_binary(str), do: 
-    (str |> String.rstrip |> String.rstrip(?=) |> qp_to_binary([]))
+    (str |> String.trim_trailing() |> String.trim_trailing("=") |> qp_to_binary([]))
   def qp_to_binary("=\r\n"<>rest,acc), do: 
     qp_to_binary(rest,acc)
   def qp_to_binary(<<?=,x1,x2>><>rest,acc), do: 

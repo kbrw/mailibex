@@ -1,6 +1,6 @@
 defmodule MimeMail.Flat do
   def to_mail(headers_flat_body) do
-    {flat_body,headers} = Enum.partition(headers_flat_body,fn {k,_}->k in [:txt,:html,:ical,:attach,:include,:attach_in] end)
+    {flat_body,headers} = Enum.split_with(headers_flat_body,fn {k,_}->k in [:txt,:html,:ical,:attach,:include,:attach_in] end)
     htmlcontent =  mail_htmlcontent(flat_body[:html],for({:include,v}<-flat_body,do: expand_attached(v)))
     plaincontent = mail_plaincontent(flat_body[:txt])
     icalcontent = mail_icalcontent(flat_body[:ical])
@@ -73,9 +73,9 @@ defmodule MimeMail.Flat do
   def find_bodies({mime,ctparams}=ct,{_,cdparams}=cd,nil,body), do: 
     find_bodies(ct,cd,{"<#{ctparams[:name]||cdparams[:filename]||gen_id(MimeTypes.mime2ext(mime))}>",%{}},body)
   def find_bodies({mime,_},{"inline",_},{id,_},body), do:
-    [inline: {(id |> String.rstrip(?>) |> String.lstrip(?<)),mime,body}]
+    [inline: {(id |> String.trim_trailing(">") |> String.trim_leading("<")),mime,body}]
   def find_bodies({mime,_},{"attachment",_},{id,_},body), do:
-    [attach: {(id |> String.rstrip(?>) |> String.lstrip(?<)),mime,body}]
+    [attach: {(id |> String.trim_trailing(">") |> String.trim_leading("<")),mime,body}]
 
   def gen_id(ext), do:
     "#{Base.encode16(:crypto.strong_rand_bytes(16), case: :lower)}#{ext}"
