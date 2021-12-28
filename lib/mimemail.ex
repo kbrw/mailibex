@@ -195,8 +195,8 @@ defmodule Iconv do
       "us_ascii" -> Codepagex.to_string!(str, :ascii)
       other_from ->
         case Codepagex.to_string(str, other_from, Codepagex.use_utf_replacement) do
-          {:ok, utf8_binary} -> utf8_binary
-          other_ret -> other_ret
+          {:ok, utf8_binary, _} -> utf8_binary
+          {:error, term, _} -> {:error, term}
         end
     end
   end
