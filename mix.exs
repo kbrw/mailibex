@@ -24,7 +24,7 @@ defmodule Mix.Tasks.Compile.Iconv do
       [i_erts]=Path.wildcard("#{:code.root_dir}/erts*/include")
       i_ei=:code.lib_dir(:erl_interface,:include)
       l_ei=:code.lib_dir(:erl_interface,:lib)
-      args = "-L\"#{l_ei}\" -lerl_interface -lei -I\"#{i_ei}\" -I\"#{i_erts}\" -Wall -shared -fPIC"
+      args = "-L\"#{l_ei}\" -lei -I\"#{i_ei}\" -I\"#{i_erts}\" -Wall -shared -fPIC"
       args = args <> if {:unix, :darwin}==:os.type, do: " -undefined dynamic_lookup -dynamiclib", else: ""
       args = args <> if {:win32, :nt}==:os.type, do: " -liconv", else: ""
       Mix.shell.info to_string :os.cmd('gcc #{args} -v -o #{lib_file} c_src/iconv_nif.c')
@@ -36,24 +36,45 @@ end
 defmodule Mailibex.Mixfile do
   use Mix.Project
 
+  def app, do: :mailibex
+
+  def version, do: "0.1.7"
+
+  def source_url, do: "https://github.com/kbrw/#{app()}"
+
   def project do
-    [app: :mailibex,
-     version: "0.1.6",
+    [app: app(),
+     version: version(),
      elixir: ">= 1.5.0",
      description: description(),
      package: package(),
      compilers: [:iconv, :elixir, :app],
-     deps: deps()]
+     deps: deps(),
+     docs: docs(),
+     elixirc_options: [warnings_as_errors: true],
+     ]
   end
 
   def application do
-    [applications: [:logger]]
+    [
+      extra_applications: [
+        :crypto,
+        :inets,
+        :logger,
+        :public_key,
+        :ssl,
+      ],
+    ]
   end
 
   defp package do
     [ maintainers: ["Arnaud Wetzel","heri16"],
       licenses: ["The MIT License (MIT)"],
-      links: %{ "GitHub"=>"https://github.com/awetzel/mailibex" } ]
+      links: %{
+        "Changelog" => "https://hexdocs.pm/#{app()}/changelog.html",
+        "GitHub" => source_url()
+      },
+    ]
   end
 
   defp description do
@@ -68,7 +89,20 @@ defmodule Mailibex.Mixfile do
   defp deps do
     [
       {:codepagex, "~> 0.1", optional: true},
-      {:ex_doc, ">= 0.0.0", only: :dev}
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
+    ]
+  end
+
+  defp docs do
+    [
+      extras: [
+        "CHANGELOG.md": [title: "Changelog"],
+        "README.md": [title: "Overview"]
+      ],
+      main: "readme",
+      source_url: source_url(),
+      # We need to git tag with the corresponding format.
+      source_ref: "v#{version()}",
     ]
   end
 end
