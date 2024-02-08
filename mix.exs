@@ -85,11 +85,11 @@ defmodule Mailibex.Mixfile do
     mimemail as a keyword list.
     """
   end
-  
+
   defp deps do
     [
       {:codepagex, "~> 0.1", optional: true},
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.31", only: :dev, runtime: false}
     ]
   end
 
