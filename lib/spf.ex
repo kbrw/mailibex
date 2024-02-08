@@ -1,5 +1,5 @@
 defmodule SPF do
-  
+
   @doc """
     params:
     - sender: sender mail to check
@@ -26,7 +26,7 @@ defmodule SPF do
   def guess_fqdn do
     {:ok,host} = :inet.gethostname
     {:ok,{:hostent,fqdn,_,_,_,_}} = :inet.gethostbyname(host)
-    "#{fqdn}" 
+    "#{fqdn}"
   end
 
   # check_host param = %{sender: "me@example.org", client_ip: {1,2,3,4}, helo: "relay.com", server_domain: "me.com", domain: "example.org"}
@@ -55,7 +55,7 @@ defmodule SPF do
         {:"#{name}",target_name(value,params) || ""}
       end
       matches = Enum.map mechanisms, fn term->
-        fn-> 
+        fn->
           {ret,term} = return(term)
           case term_match(term,params) do
             :match->ret
@@ -85,9 +85,9 @@ defmodule SPF do
         {ret,_}->ret
       end
     catch
-      _, r -> 
+      _, r ->
         IO.puts inspect r
-        IO.puts inspect(System.stacktrace, pretty: true)
+        IO.puts inspect(__STACKTRACE__, pretty: true)
         :permerror
     end
   end
@@ -114,7 +114,7 @@ defmodule SPF do
     {domain,prefix}=extract_prefix(target_name(domain_spec,params),family)
     false = lookup_limit_exceeded()
     case :inet_res.gethostbyname('#{domain}',family) do
-      {:ok,{:hostent,_,_,_,_,ip_list}}-> 
+      {:ok,{:hostent,_,_,_,_,ip_list}}->
         if Enum.any?(ip_list,&ip_in_network(params.client_ip,&1,prefix)), do: :match, else: :notmatch
       _->:notmatch
     end
@@ -126,11 +126,11 @@ defmodule SPF do
     false = lookup_limit_exceeded()
     case :inet_res.lookup('#{domain}', :in, :mx, edns: 0) do
       []->:notmatch
-      res-> 
+      res->
         Enum.find_value(res,fn {_prio,name}->
           false = lookup_limit_exceeded()
           case :inet_res.gethostbyname(name,family) do
-            {:ok,{:hostent,_,_,_,_,ip_list}}-> 
+            {:ok,{:hostent,_,_,_,_,ip_list}}->
               if Enum.any?(ip_list,&ip_in_network(params.client_ip,&1,prefix)), do: :match
             _->false
           end
@@ -145,7 +145,7 @@ defmodule SPF do
       {:ok,{:hostent,name,_,_,_,_}}->
         false = lookup_limit_exceeded()
         case :inet_res.gethostbyname(name,family) do
-          {:ok,{:hostent,_,_,_,_,ip_list}}-> 
+          {:ok,{:hostent,_,_,_,_,ip_list}}->
             if params.client_ip in ip_list do
               if String.ends_with?("#{name}",target_name(domain_spec,params)), do: :match, else: :notmatch
             else :notmatch end
@@ -173,7 +173,7 @@ defmodule SPF do
     end
   end
 
-  def lookup_limit_reset, do: 
+  def lookup_limit_reset, do:
     Process.put(:lookups,0)
   def lookup_limit_exceeded do
    case Process.get(:lookups,0) do
@@ -191,9 +191,9 @@ defmodule SPF do
     {pref,_}=Integer.parse(pref)
     {domain,pref}
   end
-  def extract_prefix([domain],:inet), do: 
+  def extract_prefix([domain],:inet), do:
     {domain,32}
-  def extract_prefix([domain],:inet6), do: 
+  def extract_prefix([domain],:inet6), do:
     {domain,128}
 
   defp bin_ip({ip1,ip2,ip3,ip4}), do:
@@ -214,12 +214,12 @@ defmodule SPF do
     (mask &&& net_ip) == (mask &&& ip)
   end
 
-  def target_name(name,params), do: 
+  def target_name(name,params), do:
     target_name(name,params,[])
 
-  def target_name("",_,acc), do: 
+  def target_name("",_,acc), do:
     (acc |> Enum.reverse |> to_string)
-  def target_name(<<"%{",macro,rest::binary>>,params,acc) 
+  def target_name(<<"%{",macro,rest::binary>>,params,acc)
       when macro in [?s,?l,?o,?d,?i,?p,?h,?c,?r,?t,?v,?S,?L,?O,?D,?I,?P,?H,?C,?R,?T,?V] do
     expanded = target_name_macro(String.downcase(<<macro>>),params)
     [transfo,rest] = String.split(rest,"}",parts: 2)
@@ -229,11 +229,11 @@ defmodule SPF do
     end
     target_name(rest,params,[URI.encode(expanded)|acc])
   end
-  def target_name("%%"<>rest,params,acc), do: 
+  def target_name("%%"<>rest,params,acc), do:
     target_name(rest,params,[?%|acc])
-  def target_name("%_"<>rest,params,acc), do: 
+  def target_name("%_"<>rest,params,acc), do:
     target_name(rest,params,[?\s|acc])
-  def target_name("%-"<>rest,params,acc), do: 
+  def target_name("%-"<>rest,params,acc), do:
     target_name(rest,params,["%20"|acc])
   def target_name("%"<>_,_,_), do: throw(:wrongmacro)
   def target_name(<<c,rest::binary>>,params,acc), do:
@@ -260,7 +260,7 @@ defmodule SPF do
       {:ok,{:hostent,name,_,_,_,_}}->
         if not lookup_limit_exceeded() do
           case :inet_res.gethostbyname(name,family) do
-            {:ok,{:hostent,_,_,_,_,ip_list}}-> 
+            {:ok,{:hostent,_,_,_,_,ip_list}}->
               if ip in ip_list do "#{name}" else "unknown" end
             _->"unknown"
           end
