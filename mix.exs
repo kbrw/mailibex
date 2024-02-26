@@ -38,14 +38,14 @@ defmodule Mailibex.Mixfile do
 
   def app, do: :mailibex
 
-  def version, do: "0.1.7"
+  def version, do: "0.2.0"
 
   def source_url, do: "https://github.com/kbrw/#{app()}"
 
   def project do
     [app: app(),
      version: version(),
-     elixir: ">= 1.5.0",
+     elixir: "~> 1.12",
      description: description(),
      package: package(),
      compilers: [:iconv, :elixir, :app],
@@ -85,11 +85,11 @@ defmodule Mailibex.Mixfile do
     mimemail as a keyword list.
     """
   end
-  
+
   defp deps do
     [
       {:codepagex, "~> 0.1", optional: true},
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.31", only: :dev, runtime: false}
     ]
   end
 
