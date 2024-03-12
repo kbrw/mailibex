@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## [0.2.1]
+## [0.2.1] (2024-03-12)
 
 ### Fixed
 
@@ -23,6 +23,6 @@
 ---
 
 [unreleased]: https://github.com/kbrw/mailibex/compare/v0.2.1...HEAD
-[0.2.0]: https://github.com/kbrw/mailibex/compare/v0.2.0...v0.2.1
+[0.2.1]: https://github.com/kbrw/mailibex/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/kbrw/mailibex/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/kbrw/mailibex/compare/fbf11cd...v0.1.6
