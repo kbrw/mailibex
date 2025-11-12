@@ -7,6 +7,7 @@
 ### Fixed
 
 - Warnings emitted by the Elixir's compiler v1.19.2
+- Warnings emitted by a negative range given to `Enum.slice/2`
 
 ## [0.2.1] (2024-03-12)
 

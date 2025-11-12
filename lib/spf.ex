@@ -406,7 +406,13 @@ defmodule SPF do
     delimiters = for <<c <- delimiters>>, c in [?., ?-, ?+, ?,, ?/, ?_, ?=], into: "", do: <<c>>
     components = String.split(expanded, Regex.compile!("[" <> delimiters <> "]"))
     components = if reversed?, do: Enum.reverse(components), else: components
-    components = Enum.slice(components, max(-length(components), start_index)..-1)
+    len = length(components)
+
+    components =
+      if start_index == 0 || len <= -start_index,
+        do: components,
+        else: Enum.drop(components, len + start_index)
+
     Enum.join(components, ".")
   end
 end
