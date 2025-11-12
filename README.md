@@ -1,4 +1,4 @@
-mailibex [![Build Status](https://travis-ci.org/kbrw/mailibex.svg?branch=master)](https://travis-ci.org/kbrw/mailibex) 
+mailibex ![GitHub branch check runs](https://img.shields.io/github/check-runs/kbrw/mailibex/master)
 ========
 
 Library containing Email related implementations in Elixir : dkim, spf, dmark, mimemail, smtp

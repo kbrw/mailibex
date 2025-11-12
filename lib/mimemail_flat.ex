@@ -1,137 +1,189 @@
 defmodule MimeMail.Flat do
   def to_mail(headers_flat_body) do
-    {flat_body,headers} = Enum.split_with(headers_flat_body,fn {k,_}->k in [:txt,:html,:ical,:attach,:include,:attach_in] end)
-    htmlcontent =  mail_htmlcontent(flat_body[:html],for({:include,v}<-flat_body,do: expand_attached(v)))
+    {flat_body, headers} =
+      Enum.split_with(headers_flat_body, fn {k, _} ->
+        k in [:txt, :html, :ical, :attach, :include, :attach_in]
+      end)
+
+    htmlcontent =
+      mail_htmlcontent(flat_body[:html], for({:include, v} <- flat_body, do: expand_attached(v)))
+
     plaincontent = mail_plaincontent(flat_body[:txt])
     icalcontent = mail_icalcontent(flat_body[:ical])
-    content = mail_content([plaincontent,htmlcontent,icalcontent] |> Enum.reject(&is_nil/1))
-    %{headers: bodyheaders, body: body} = mail_final(content,for({:attach,v}<-flat_body,do: expand_attached(v)),
-                                                             for({:attach_in,v}<-flat_body,do: expand_attached(v)))
-    %MimeMail{headers: headers++bodyheaders, body: body}
+    content = mail_content([plaincontent, htmlcontent, icalcontent] |> Enum.reject(&is_nil/1))
+
+    %{headers: bodyheaders, body: body} =
+      mail_final(
+        content,
+        for({:attach, v} <- flat_body, do: expand_attached(v)),
+        for({:attach_in, v} <- flat_body, do: expand_attached(v))
+      )
+
+    %MimeMail{headers: headers ++ bodyheaders, body: body}
   end
 
-  def from_mail(%MimeMail{}=mail) do
+  def from_mail(%MimeMail{} = mail) do
     mail
-    |> MimeMail.decode_body
-    |> find_bodies
+    |> MimeMail.decode_body()
+    |> find_bodies()
     |> Enum.concat(mail.headers)
-    |> Enum.filter(fn {k,_}-> k not in [:inline,:'content-type',:'content-disposition',:'content-transfer-encoding',:'content-id'] end)
+    |> Enum.filter(fn {k, _} ->
+      k not in [
+        :inline,
+        :"content-type",
+        :"content-disposition",
+        :"content-transfer-encoding",
+        :"content-id"
+      ]
+    end)
   end
 
-  def update_mail(%MimeMail{}=mail,updatefn) do
-    mail |> from_mail |> updatefn.() |> to_mail
+  def update_mail(%MimeMail{} = mail, updatefn) do
+    mail |> from_mail() |> updatefn.() |> to_mail()
   end
 
-  defp expand_attached({_id,_ct,_body}=attached), do: 
-    attached
-  defp expand_attached({id,body}), do: 
-    {id,MimeTypes.path2mime(id),body}
-  defp expand_attached(body) when is_binary(body), do: 
-    expand_attached({gen_id(MimeTypes.bin2ext(body)),body})
+  defp expand_attached({_id, _ct, _body} = attached), do: attached
+  defp expand_attached({id, body}), do: {id, MimeTypes.path2mime(id), body}
 
-  def find_bodies(childs) when is_list(childs), do:
-    List.flatten(for(child<-childs, do: find_bodies(child)))
+  defp expand_attached(body) when is_binary(body),
+    do: expand_attached({gen_id(MimeTypes.bin2ext(body)), body})
+
+  def find_bodies(childs) when is_list(childs),
+    do: List.flatten(for(child <- childs, do: find_bodies(child)))
+
   def find_bodies(%MimeMail{headers: headers, body: body}) do
-    find_bodies(headers[:'content-type'],headers[:'content-disposition'],headers[:'content-id'],body)
+    find_bodies(
+      headers[:"content-type"],
+      headers[:"content-disposition"],
+      headers[:"content-id"],
+      body
+    )
   end
 
-  def find_bodies({"multipart/mixed",_},_,_,childs) do
-    find_bodies(childs) |> Enum.map(fn
-      {:inline,{_,_,_}=child}->{:attach_in,child}
-      {_,{_,_,_}=child}->{:attach,child}
-      txt_or_html->txt_or_html
+  def find_bodies({"multipart/mixed", _}, _, _, childs) do
+    find_bodies(childs)
+    |> Enum.map(fn
+      {:inline, {_, _, _} = child} -> {:attach_in, child}
+      {_, {_, _, _} = child} -> {:attach, child}
+      txt_or_html -> txt_or_html
     end)
   end
-  def find_bodies({"multipart/related",_},_,_,childs) do
-    find_bodies(childs) |> Enum.map(fn
-      {_,{_,_,_}=child}->{:include,child}
-      other->other
+
+  def find_bodies({"multipart/related", _}, _, _, childs) do
+    find_bodies(childs)
+    |> Enum.map(fn
+      {_, {_, _, _} = child} -> {:include, child}
+      other -> other
     end)
   end
-  def find_bodies({"multipart/alternative",_},_,_,childs) do
+
+  def find_bodies({"multipart/alternative", _}, _, _, childs) do
     find_bodies(childs)
   end
+
   # default content type is content/plain : 
-  def find_bodies(nil,cd,id,body), do: 
-    find_bodies({"content/plain",%{}},cd,id,body)
+  def find_bodies(nil, cd, id, body), do: find_bodies({"content/plain", %{}}, cd, id, body)
   # cases where html and txt are not attachements
-  def find_bodies({"text/html",_},{"inline",_},_,body), do:
-    [html: body]
-  def find_bodies({"text/html",_},nil,_,body), do:
-    [html: body]
-  def find_bodies({"text/plain",_},{"inline",_},_,body), do:
-    [txt: body]
-  def find_bodies({"text/plain",_},nil,_,body), do:
-    [txt: body]
-  def find_bodies({"text/calendar",%{method: method}},{"inline",_},_,body), do:
-    [ical: {method,body}]
-  def find_bodies({"text/calendar",%{method: method}},nil,_,body), do:
-    [ical: {method,body}]
+  def find_bodies({"text/html", _}, {"inline", _}, _, body), do: [html: body]
+  def find_bodies({"text/html", _}, nil, _, body), do: [html: body]
+  def find_bodies({"text/plain", _}, {"inline", _}, _, body), do: [txt: body]
+  def find_bodies({"text/plain", _}, nil, _, body), do: [txt: body]
+
+  def find_bodies({"text/calendar", %{method: method}}, {"inline", _}, _, body),
+    do: [ical: {method, body}]
+
+  def find_bodies({"text/calendar", %{method: method}}, nil, _, body), do: [ical: {method, body}]
   # default disposition is attachments, default id is name or guess from mime
-  def find_bodies(ct,nil,id,body), do: 
-    find_bodies(ct,{"attachment",%{}},id,body)
-  def find_bodies({mime,ctparams}=ct,{_,cdparams}=cd,nil,body), do: 
-    find_bodies(ct,cd,{"<#{ctparams[:name]||cdparams[:filename]||gen_id(MimeTypes.mime2ext(mime))}>",%{}},body)
-  def find_bodies({mime,_},{"inline",_},{id,_},body), do:
-    [inline: {(id |> String.trim_trailing(">") |> String.trim_leading("<")),mime,body}]
-  def find_bodies({mime,_},{"attachment",_},{id,_},body), do:
-    [attach: {(id |> String.trim_trailing(">") |> String.trim_leading("<")),mime,body}]
+  def find_bodies(ct, nil, id, body), do: find_bodies(ct, {"attachment", %{}}, id, body)
 
-  def gen_id(ext), do:
-    "#{Base.encode16(:crypto.strong_rand_bytes(16), case: :lower)}#{ext}"
+  def find_bodies({mime, ctparams} = ct, {_, cdparams} = cd, nil, body),
+    do:
+      find_bodies(
+        ct,
+        cd,
+        {"<#{ctparams[:name] || cdparams[:filename] || gen_id(MimeTypes.mime2ext(mime))}>", %{}},
+        body
+      )
 
-  defp mail_htmlcontent(nil,_), do: nil
-  defp mail_htmlcontent(body,[]), do:
-    %MimeMail{headers: ['content-type': {"text/html",%{}}], body: body}
-  defp mail_htmlcontent(body,included), do:
-    %MimeMail{
-      headers: ['content-type': {"multipart/related",%{}}],
-      body: [mail_htmlcontent(body,[]) | for {id,contenttype,binary}<-included do
-        %MimeMail{
-          headers: ['content-type': {contenttype,%{name: id}},
-                    'content-disposition': {"inline",%{filename: id}},
-                    'content-id': "<#{id}>"],
-          body: binary
-        }
-      end]
+  def find_bodies({mime, _}, {"inline", _}, {id, _}, body),
+    do: [inline: {id |> String.trim_trailing(">") |> String.trim_leading("<"), mime, body}]
+
+  def find_bodies({mime, _}, {"attachment", _}, {id, _}, body),
+    do: [attach: {id |> String.trim_trailing(">") |> String.trim_leading("<"), mime, body}]
+
+  def gen_id(ext), do: "#{Base.encode16(:crypto.strong_rand_bytes(16), case: :lower)}#{ext}"
+
+  defp mail_htmlcontent(nil, _), do: nil
+
+  defp mail_htmlcontent(body, []),
+    do: %MimeMail{headers: ["content-type": {"text/html", %{}}], body: body}
+
+  defp mail_htmlcontent(body, included),
+    do: %MimeMail{
+      headers: ["content-type": {"multipart/related", %{}}],
+      body: [
+        mail_htmlcontent(body, [])
+        | for {id, contenttype, binary} <- included do
+            %MimeMail{
+              headers: [
+                "content-type": {contenttype, %{name: id}},
+                "content-disposition": {"inline", %{filename: id}},
+                "content-id": "<#{id}>"
+              ],
+              body: binary
+            }
+          end
+      ]
     }
 
   defp mail_plaincontent(nil), do: nil
-  defp mail_plaincontent(body), do:
-    %MimeMail{headers: ['content-type': {"text/plain",%{}}], body: body}
+
+  defp mail_plaincontent(body),
+    do: %MimeMail{headers: ["content-type": {"text/plain", %{}}], body: body}
 
   defp mail_icalcontent(nil), do: nil
-  defp mail_icalcontent(body) when is_binary(body), do: mail_icalcontent({:request,body})
-  defp mail_icalcontent({method,body}), do: 
-    %MimeMail{headers: ['content-type': {"text/calendar",%{method: String.upcase("#{method}")}}], body: body}
+  defp mail_icalcontent(body) when is_binary(body), do: mail_icalcontent({:request, body})
+
+  defp mail_icalcontent({method, body}),
+    do: %MimeMail{
+      headers: ["content-type": {"text/calendar", %{method: String.upcase("#{method}")}}],
+      body: body
+    }
 
   defp mail_content([]), do: mail_plaincontent(" ")
   defp mail_content([singlecontent]), do: singlecontent
-  defp mail_content([_|_]=contents), do:
-    %MimeMail{
-      headers: ['content-type': {"multipart/alternative",%{}}], 
-      body: contents 
+
+  defp mail_content([_ | _] = contents),
+    do: %MimeMail{
+      headers: ["content-type": {"multipart/alternative", %{}}],
+      body: contents
     }
 
-  defp mail_final(content,[],[]), do: content
-  defp mail_final(content,attached,attached_in), do:
-    %MimeMail{
-      headers: ['content-type': {"multipart/mixed",%{}}], 
-      body: [content | 
-        for {name,contenttype,binary}<-attached do
-          %MimeMail{
-            headers: ['content-type': {contenttype,%{name: name}},
-                      'content-disposition': {"attachment",%{filename: name}}], 
-            body: binary
-          }
-        end ++
-        for {name,contenttype,binary}<-attached_in do
-          %MimeMail{
-            headers: ['content-type': {contenttype,%{name: name}},
-                      'content-disposition': {"inline",%{filename: name}}],
-            body: binary
-          }
-        end
-      ] 
+  defp mail_final(content, [], []), do: content
+
+  defp mail_final(content, attached, attached_in),
+    do: %MimeMail{
+      headers: ["content-type": {"multipart/mixed", %{}}],
+      body: [
+        content
+        | for {name, contenttype, binary} <- attached do
+            %MimeMail{
+              headers: [
+                "content-type": {contenttype, %{name: name}},
+                "content-disposition": {"attachment", %{filename: name}}
+              ],
+              body: binary
+            }
+          end ++
+            for {name, contenttype, binary} <- attached_in do
+              %MimeMail{
+                headers: [
+                  "content-type": {contenttype, %{name: name}},
+                  "content-disposition": {"inline", %{filename: name}}
+                ],
+                body: binary
+              }
+            end
+      ]
     }
 end

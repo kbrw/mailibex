@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.2.2] (2025-11-12)
+
+### Fixed
+
+- Warnings emitted by the Elixir's compiler v1.19.2
+
 ## [0.2.1] (2024-03-12)
 
 ### Fixed

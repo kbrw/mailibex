@@ -13,7 +13,7 @@ defmodule MimeTypesTest do
   end
 
   test "guess extensions from binaries" do
-    for f<-Path.wildcard("test/mimes/*") do
+    for f <- Path.wildcard("test/mimes/*") do
       assert Path.extname(f) == MimeTypes.bin2ext(File.read!(f))
     end
   end
