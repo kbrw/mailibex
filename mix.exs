@@ -46,7 +46,7 @@ defmodule Mailibex.Mixfile do
 
   def app, do: :mailibex
 
-  def version, do: "0.2.1"
+  def version, do: "0.2.2"
 
   def source_url, do: "https://github.com/kbrw/#{app()}"
 
